@@ -72,3 +72,7 @@ dkms.conf
 *.coproj
 *.config
 *.icf
+/SI/WV08048ERN070G.si4project/*
+/RA8875/MDK_ARM/*
+/RA8875/MDK_ARM/*
+*.W170076

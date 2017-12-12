@@ -63,27 +63,29 @@ extern HT_GPIO_TypeDef* const GPIO_PORT[GPIO_PORT_NUM];
   */
 #define LEDn                        (4)
 
-#define LED1_GPIO_ID                (GPIO_PE)
-#define LED1_GPIO_PIN               (GPIO_PIN_2)
-#define LED1_AFIO_MODE              (AFIO_MODE_DEFAULT)
+#define LED1_GPIO_ID                ( GPIO_PC )
+#define LED1_GPIO_PIN               ( GPIO_PIN_3 )
+#define LED1_AFIO_MODE              ( AFIO_MODE_DEFAULT )
 
-#define LED2_GPIO_ID                (GPIO_PC)
-#define LED2_GPIO_PIN               (GPIO_PIN_3)
-#define LED2_AFIO_MODE              (AFIO_MODE_DEFAULT)
+#define LED2_GPIO_ID                ( GPIO_PD )
+#define LED2_GPIO_PIN               ( GPIO_PIN_8 )
+#define LED2_AFIO_MODE              ( AFIO_MODE_DEFAULT )
 
-#define LED3_GPIO_ID                (GPIO_PD)
-#define LED3_GPIO_PIN               (GPIO_PIN_8)
-#define LED3_AFIO_MODE              (AFIO_MODE_DEFAULT)
+#define LED3_GPIO_ID                ( GPIO_PA )
+#define LED3_GPIO_PIN               ( GPIO_PIN_10 )
+#define LED3_AFIO_MODE              ( AFIO_MODE_DEFAULT)
 
-#define LED4_GPIO_ID                (GPIO_PA)
-#define LED4_GPIO_PIN               (GPIO_PIN_10)
-#define LED4_AFIO_MODE              (AFIO_MODE_DEFAULT)
+#define LED4_GPIO_ID                ( GPIO_PD )
+#define LED4_GPIO_PIN               ( GPIO_PIN_3 )
+#define LED4_AFIO_MODE              ( AFIO_MODE_DEFAULT )
+
 typedef enum
 {
   HT_LED1 = 0,
   HT_LED2 = 1,
   HT_LED3 = 2,
   HT_LED4 = 3,
+  
 } LED_TypeDef;
 /**
   * @}
@@ -212,15 +214,6 @@ typedef enum
   */
 #define LCD_EBI                     (HT_EBI)
 /*
-//============= 有波形 =============//
-#define LCD_EBI_CS_GPIO_ID          (GPIO_PB)
-#define LCD_EBI_CS_AFIO_PIN         (AFIO_PIN_7)
-#define LCD_EBI_CS_AFIO_MODE        (AFIO_FUN_EBI)
-
-
-#define LCD_EBI_OE_GPIO_ID          (GPIO_PB)//always high
-#define LCD_EBI_OE_AFIO_PIN         (AFIO_PIN_6)
-#define LCD_EBI_OE_AFIO_MODE        (AFIO_FUN_EBI)
 
 //============= 有波形 =============//
 #define LCD_EBI_WE_GPIO_ID          (GPIO_PB)
@@ -230,6 +223,7 @@ typedef enum
 #define LCD_EBI_RS_GPIO_ID          (GPIO_PA)
 #define LCD_EBI_RS_AFIO_PIN         (AFIO_PIN_11)
 #define LCD_EBI_RS_AFIO_MODE        (AFIO_FUN_EBI)
+
 //==== Control Define Start =====//
 #define HTCFG_DC      (HT_GPIOB)
 #define GPIO_DC       (GPIO_PB)
@@ -258,6 +252,14 @@ typedef enum
 
 #define LCD_EBI_RST_CLK(CK)         (CK.Bit.PA)
 
+#define LCD_EBI_CS_GPIO_ID          (GPIO_PB)
+#define LCD_EBI_CS_AFIO_PIN         (AFIO_PIN_7)
+#define LCD_EBI_CS_AFIO_MODE        (AFIO_FUN_EBI)
+
+#define LCD_EBI_OE_GPIO_ID          (GPIO_PB)		//always high
+#define LCD_EBI_OE_AFIO_PIN         (AFIO_PIN_6)
+#define LCD_EBI_OE_AFIO_MODE        (AFIO_FUN_EBI)
+
 #define LCD_EBI_WE_GPIO_ID          (GPIO_PB)
 #define LCD_EBI_WE_AFIO_PIN         (AFIO_PIN_8)
 #define LCD_EBI_WE_AFIO_MODE        (AFIO_FUN_EBI)
@@ -276,12 +278,12 @@ typedef enum
 #define GPIO_DIP      (GPIO_PA)//(GPIO_PD)
 #define GPIO_RST      (GPIO_PB)//(GPIO_PB)
 
-#define DC            (AFIO_PIN_11)//(AFIO_PIN_11)
+#define DC            (AFIO_PIN_11)	// (AFIO_PIN_11)
 #define WR            (AFIO_PIN_8)
-#define RD            (AFIO_PIN_6)//(AFIO_PIN_6)
-#define CS            (AFIO_PIN_7)//(AFIO_PIN_14)
-#define DIP           (AFIO_PIN_0)//(AFIO_PIN_13)
-#define RST           (AFIO_PIN_12)//(AFIO_PIN_7)
+#define RD            (AFIO_PIN_6)	// (AFIO_PIN_6)
+#define CS            (AFIO_PIN_7)	// (AFIO_PIN_14)
+#define DIP           (AFIO_PIN_0)	// (AFIO_PIN_13)
+#define RST           (AFIO_PIN_12)	// (AFIO_PIN_7)
 
 
 //#define HTCFG_INT      (HT_GPIOB)

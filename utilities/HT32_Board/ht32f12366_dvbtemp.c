@@ -180,7 +180,7 @@ void HT32F_DVB_LEDOff(LED_TypeDef Led)
  *    @arg HT_LED3
  * @retval None
  ************************************************************************************************************/
-void HT32F_DVB_LEDToggle(LED_TypeDef Led)
+void HT32F_DVB_LEDToggle( LED_TypeDef Led )
 {
   GPIO_PORT[LED_GPIO_ID[Led]]->DOUTR ^= LED_GPIO_PIN[Led];
 }

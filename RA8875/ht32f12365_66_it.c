@@ -166,7 +166,7 @@ void SysTick_Handler(void)
 u8 mBuff[256];
 void EXTI13_IRQHandler(void)
 {
-	u8 i=0;
+	// u8 i=0;
 	EXTI_ClearEdgeFlag(EXTI_CHANNEL_13);
 	printf("13\r\n");
 

@@ -5,6 +5,11 @@
 #include "sdio_sd.c"
 #include "./FatFS/tff.h"
 #include "RA8875.h"
+#include "Keypad.h"
+#include "DisplayDefs.h"
+
+#define false 0
+#define true  1
 
 #if 0
 u8 rabit[1500] =
@@ -377,6 +382,42 @@ const unsigned char bw[2048] =
 
 u8 mBuff2[256] = "test";
 
+_KEYPAD *kp;
+
+void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
+{
+    keyboard_t tiny;
+
+    char name1[ 10 ];
+
+    // memcpy( &tiny, kp->GetKeyboard_FunPtr( ), sizeof( keyboard_t ) );
+
+    tiny.x = x;
+    tiny.y = y;
+
+    tiny.width  = w;
+    tiny.height = h;
+
+    // copy definition and then resize it
+    // select the internal keyboard
+    // now select this tiny keyboard
+    kp->SetKeyboard( &tiny, '=', 0 );
+
+    kp->SetKeyboardFont( NULL, 1 );
+
+    if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", false, 0, true ) )
+    {
+    	/*
+        LCD.foreground(BrightRed);
+        lcd.background(Black);
+        lcd.cls();
+        lcd.SetTextCursor(0,40);
+        lcd.printf("Compressed: %s\r\n", name1);
+        */
+    }
+}
+
+
 int main( void )
 {
 	int 			i	= 0;
@@ -407,6 +448,11 @@ int main( void )
 	openBMP3( "bg.dat" );
 
 	Chk_Busy();
+
+	kp = Keypad_CreateObj( Blue, White );
+
+	FloatingSmallQWERTYTest( 50, 0, 200, 0 );
+	// ---------------------------------------
 
 
 	DrawPictureFromSD( "file1.dat", SD_ReadBuf, 100, 0 );

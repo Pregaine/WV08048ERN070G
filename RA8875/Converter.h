@@ -2,9 +2,6 @@
 
 #define _CONVERTER_H_
 
-
-extern void SWAP_U16( u16 *data );
-
-
+extern void SWAP_U16( unsigned short *data );
 
 #endif

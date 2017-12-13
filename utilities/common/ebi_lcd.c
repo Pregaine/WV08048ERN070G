@@ -1,4 +1,4 @@
-
+#include "RA8875.h"
 #include "ebi_lcd.h"
 #include "font.h"
 

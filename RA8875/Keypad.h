@@ -51,9 +51,9 @@ typedef struct
 
 	const uint8_t *restore_font; 		// save user font
 	const uint8_t *user_font; 			// keyboard restore user font
-	int restore_hScale; 	// save scale
+	int restore_hScale; 			    // save scale
 	int restore_vScale;
-	int user_font_scale; 	// keyboard font scale
+	int user_font_scale; 				// keyboard font scale
 	const keyboard_t *kbd;
 	char enter_key;
 	char esc_key;

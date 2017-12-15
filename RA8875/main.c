@@ -156,10 +156,10 @@ bool			click = FALSE;
 u32 			uSpeedCount;
 
 /* Global variables ----------------------------------------------------------------------------------------*/
-FATFS			fs; /* File system object																		  */
-FIL 			fsrc; /* File object																				*/
-DIR 			dir; /* Directory object																		   */
-FILINFO 		fno; /* File info object																		   */
+FATFS			fs; /* File system object																	*/
+FIL 			fsrc; /* File object																		*/
+DIR 			dir; /* Directory object																	*/
+FILINFO 		fno; /* File info object																	*/
 UINT			dcnt = 0;
 FRESULT 		result = FR_NOT_READY;
 u8				SD_ReadBuf[51200]; //2017/09/25
@@ -405,7 +405,7 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
 
     kp->SetKeyboardFont( NULL, 1 );
 
-    if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", false, 0, true ) )
+    if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", FALSE, 0, TRUE ) )
     {
     	/*
         LCD.foreground(BrightRed);
@@ -449,13 +449,18 @@ int main( void )
 
 	Chk_Busy();
 
-	kp = Keypad_CreateObj( Blue, White );
+	// kp = Keypad_CreateObj( Blue, White );
 
-	FloatingSmallQWERTYTest( 50, 0, 200, 0 );
+	// FloatingSmallQWERTYTest( 50, 0, 200, 0 );
 	// ---------------------------------------
 
+	// DrawPictureFromSD( "file1.dat", SD_ReadBuf, 100, 0 );
 
-	DrawPictureFromSD( "file1.dat", SD_ReadBuf, 100, 0 );
+    DrawPictureFromSD( "meter.dat", SD_ReadBuf, 150, 100 );
+
+    DrawPictureFromSD( "test.dat", SD_ReadBuf, 500, 100 );
+
+    // DrawPictureFromSD( "file1.dat", SD_ReadBuf, 200, 100 );
 
 	/*
 	DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
@@ -601,11 +606,12 @@ int main( void )
 		//tStr2[1] = 0x32;
 		//tStr2[2] = 0x33;
 		Chk_Busy();
-		DrawString( 300,200,tStr2,3,3,FALSE,FALSE,White,Red );
+
+		// DrawString( 300,200,tStr2,3,3,FALSE,FALSE,White,Red );
 
 		//DrawString(10,300,mBuff2[i],0,0,FALSE,FALSE,Green,Purple);
 		//DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
-		printf( "=====End=====\r\n" );
+		// printf( "=====End=====\r\n" );
 
 		///*
 		Delay100msec();

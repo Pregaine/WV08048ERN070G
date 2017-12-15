@@ -70,9 +70,37 @@ typedef struct
 
 	u32 size;
 
+	u16 orig_x;
+	u16 orig_y;
+
+	u16 move_x;
+	u16 move_y;
+
 }_PicturePack;
+
+typedef struct
+{
+
+	/// get the screen width in pixels
+    ///
+    /// @returns screen width in pixels.
+    ///
+	dim_t ( *width )( void );
+
+    /// get the screen height in pixels
+    ///
+    /// @returns screen height in pixels.
+    ///
+	dim_t ( *height )(void);
+
+
+	dim_t ( *fontheight )( void );
+
+}_RA8875;
 
 
 extern void DrawPictureFromSD( const char *filename, u8 *dst_ptr, u16 x, u16 y );
+
+extern _RA8875 * RA8875_CreateObj( void );
 
 #endif

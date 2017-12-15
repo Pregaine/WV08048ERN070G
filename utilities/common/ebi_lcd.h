@@ -211,7 +211,7 @@ typedef struct
 #define REG231           0xE7
 #define REG239           0xEF
 
-/* LCD color 
+/* LCD color
                                                                                              */
 //#define White          0xFFFF
 //#define Black          0x0000
@@ -249,9 +249,9 @@ typedef struct
 /** @defgroup EBI_LCD_Exported_Functions EBI LCD exported functions
   * @{
   */
-  
+
 #define Color65k
- 
+
 #define	cSetD6				0x40
 #define	cSetD7				0x80
 #define	cClrD5				0xdf
@@ -278,7 +278,7 @@ void RA8875_PLL_ini(void);
 void PWM1_duty_cycle(u8 setx);
 void PWM1_clock_ratio(u8 setx);
 void PWM1_fnuction_sel(void);
-u8 DataRead(u16 cmd);
+extern u8 DataRead( u16 cmd );
 void LCD_Initial(void);
 void CmdWrite(u16 cmd);
 void DataWrite(u16 cmd);
@@ -288,7 +288,7 @@ void SetColor(u16 color);
 void KeyBoard_Int(void);
 
 void openBMP3(const char* filename);
-	
+
 void Horizontal_FontEnlarge_x2(void);
 void Graphic_Mode(void);
 
@@ -305,7 +305,7 @@ void XY_Coordinate(u16 X,u16 Y);
 u8 LCD_StatusRead(void);
 void Chk_Busy_BTE(void);
 
-void Chk_Busy(void);
+extern void Chk_Busy(void);
 
 
 //RA8875-8875

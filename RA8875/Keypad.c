@@ -7,32 +7,26 @@
 // byte pairs: size, symbol [,size, symbol [, size, symbol [...]]]
 // size is a scale factor where 10 = "normal calculated size" based on the keyboard width and the # of keys, 5 is 1/2 width, etc.
 // symbol is either the ASCII character to show, when leveraging the RA8875 internal fonts, or it is a special
-//	  character [normally non-printable] that is intercepted to perform an operation (e.g. <bs>, <shift>, etc.)
-//	  \x01: special no-key value, to leave whitespace before the next key.
-const char kpd_shiftkeys[] =
-{
-	5,0x01,8,0x15,10,'~',10,'!',10,'@',10,'#',10,'$',10,'%',10,'^',10,'&',10,'*',10,'(',10,')',10,'_',10,'+',
-	10,0x1B,0,0,
-	5,0x01,12,0x1A,10,'Q',10,'W',10,'E',10,'R',10,'T',10,'Y',10,'U',10,'I',10,'O',10,'P',10,'{',10,'}',10,'|',
-	0,0,
-	5,0x01,15,' ',10,'A',10,'S',10,'D',10,'F',10,'G',10,'H',10,'J',10,'K',10,'L',10,':',10,'"',17,0x1C,0,0,
-	5,0x01,21,0x18,10,'Z',10,'X',10,'C',10,'V',10,'B',10,'N',10,'M',10,'<',10,'>',10,'?',21,0x18,0,0,
-	5,0x01,40,0x01,55,' ',0,0,
-	0,0
+//    character [normally non-printable] that is intercepted to perform an operation (e.g. <bs>, <shift>, etc.)
+//    \x01: special no-key value, to leave whitespace before the next key.
+const char kpd_shiftkeys[] = {
+    5,0x01, 8,0x15,10,'~',10,'!',10,'@',10,'#',10,'$',10,'%',10,'^',10,'&',10,'*',10,'(',10,')',10,'_',   10,'+',10,'\x1B',0,0,
+    5,0x01,12,0x1A,10,'Q',10,'W',10,'E',10,'R',10,'T',10,'Y',10,'U',10,'I',10,'O',10,'P',10,'{',   10,'}',10,'|',0,0,
+    5,0x01,15,' ',10,'A',10,'S',10,'D',10,'F',10,'G',10,'H',10,'J',10,'K',10,'L',10,':',10,'"',   17,'\x1C',0,0,
+    5,0x01,21,0x18,10,'Z',10,'X',10,'C',10,'V',10,'B',10,'N',10,'M',10,'<',10,'>',10,'?',21,0x18,0,0,
+    5,0x01,40,0x01,55,' ',0,0,
+    0,0
+};
+const char kpd_unshiftkeys[] = {
+    5,0x01, 8,0x15,10,'`',10,'1',10,'2',10,'3',10,'4',10,'5',10,'6',10,'7',10,'8',10,'9',10,'0',10,'-',   10,'=',10,'\x1B',0,0,
+    5,0x01,12,0x1A,10,'q',10,'w',10,'e',10,'r',10,'t',10,'y',10,'u',10,'i',10,'o',10,'p',10,'[',   10,']',10,'\\',0,0,
+    5,0x01,15,' ',10,'a',10,'s',10,'d',10,'f',10,'g',10,'h',10,'j',10,'k',10,'l',10,';',10,'\'',  17,'\x1C',0,0,
+    5,0x01,21,0x18,10,'z',10,'x',10,'c',10,'v',10,'b',10,'n',10,'m',10,',',10,'.',10,'/',21,0x18,0,0,
+    5,0x01,40,0x01,55,' ',0,0,
+    0,0
 };
 
 
-const char kpd_unshiftkeys[] =
-{
-	5,0x01,8,0x15,10,'`',10,'1',10,'2',10,'3',10,'4',10,'5',10,'6',10,'7',10,'8',10,'9',10,'0',10,'-',10,'=',
-	10,0x1B,0,0,
-	5,0x01,12,0x1A,10,'q',10,'w',10,'e',10,'r',10,'t',10,'y',10,'u',10,'i',10,'o',10,'p',10,'[',10,']',10,'\\',
-	0,0,
-	5,0x01,15,' ',10,'a',10,'s',10,'d',10,'f',10,'g',10,'h',10,'j',10,'k',10,'l',10,';',10,'\'',17,0x1C,0,0,
-	5,0x01,21,0x18,10,'z',10,'x',10,'c',10,'v',10,'b',10,'n',10,'m',10,',',10,'.',10,'/',21,0x18,0,0,
-	5,0x01,40,0x01,55,' ',0,0,
-	0,0
-};
 
 
 const keyboard_t internalkbd =
@@ -155,28 +149,35 @@ bool SetKeyboardFont( const unsigned char * _font,int _fontscale )
 
 void DrawKey( rect_t r, char c, bool invert )
 {
-	/*
 
-	ra.fillroundrect( r,2,2,invert ? fore: back );
-	ra.roundrect( r,2,2,invert ? back: fore );
-	ra.SetTextCursor( r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra.fontwidth() / 2,r.p1.y + 2 );
+	printf( "\r\nvoid DrawKey( rect_t r, char c, bool invert )" );
 
-	if ( invert )
-	{
-		ra.foreground( back );
-		ra.background( fore );
-		ra.SetTextCursorControl( RA8875::NOCURSOR );
-	}
+	ra->fillroundrect( r, 2, 2, invert ?fore:back, NOFILL );
 
-	ra.putc( c );
+	ra->roundrect( r, 2, 2, invert ? back: fore, NOFILL );
+
+
+	printf( "\r\ny:%d", r.p1.y + 2 );
+	printf( "\r\nx:%d", r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2 );
+
+	ra->SetTextCursor( r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2, r.p1.y + 2 );
 
 	if ( invert )
 	{
-		ra.foreground( fore );
-		ra.background( back );
+		ra->foreground( back );
+		ra->background( fore );
+
+		ra->SetTextCursorControl( NOCURSOR, FALSE );
 	}
 
-	*/
+	ra->_putc( c );
+
+	if ( invert )
+	{
+		ra->foreground( fore );
+		ra->background( back );
+	}
+
 }
 
 
@@ -209,40 +210,38 @@ void DrawInputPanel( const char * prompt )
 
 	rect_t r;
 
-	// ra->fillrect( r, back );
-
-	/*
 	if ( user_font || user_font_scale )
 	{
 		// save to later restore
-		restore_font = ra.GetUserFont();
+		restore_font = ra->GetUserFont();
 
-		ra.GetTextFontSize( &restore_hScale, &restore_vScale );
+		ra->GetTextFontSize( &restore_hScale, &restore_vScale );
 
-		// printf( "Save : font: %p, scale: %d,%d\r\n", user_font, restore_hScale, restore_vScale );
+		printf( "\r\nSave : font: %p, scale: %d,%d", user_font, restore_hScale, restore_vScale );
 	}
-	*/
-
-	/*
 
 	if ( !user_font && user_font_scale )
 	{
-		ra.SetTextFontSize( user_font_scale );
+		ra->SetTextFontSize( user_font_scale, -1 );
 	}
 
 	r = ComputeKeypadRect();
 
-	ra.fillrect( r,back );
-	ra.foreground( fore );
-	ra.background( back );
-	ra.SetTextCursor( r.p1.x,r.p1.y + 2 );
-	ra.puts( prompt );
-	ra.puts( ":" );
-	userText			= ra.GetTextCursor();
+	ra->fillrect( r, back, NOFILL );
 
+	ra->foreground( fore );
+	ra->background( back );
+	ra->SetTextCursor( r.p1.x,r.p1.y + 2 );
+
+	/*
+	ra->puts( prompt );
+	ra->puts( ":" );
 	*/
 
-	// DrawKeypad();
+	userText = ra->GetTextCursor();
+
+	DrawKeypad( );
+
 }
 
 
@@ -250,6 +249,9 @@ rect_t ComputeKeypadRect( void )
 {
 	dim_t kH = ra->fontheight() + 4;
 	rect_t r;
+
+
+	printf( "\r\nComputeKeypadRect" );
 
 	if ( kbd->x <= 0 )
 	{
@@ -287,7 +289,8 @@ rect_t ComputeKeypadRect( void )
 		r.p2.y = r.p1.y + kbd->height - 1;
 	}
 
-	//printf("KeypadRect (%d,%d) - (%d,%d)\r\n", r.p1.x, r.p1.y, r.p2.x, r.p2.y);
+	printf( "\r\nKeypadRect (%d,%d) - (%d,%d)", r.p1.x, r.p1.y, r.p2.x, r.p2.y );
+
 	return r;
 
 
@@ -306,14 +309,17 @@ void DrawKeypad( void )
 
 	// fW = ra.fontwidth();
 	fH	= ra->fontheight();
+
 	kH	= fH + 4;
-	
+
 	r = ComputeKeypadRect();
+
     ref = r;
 
 	kW	= ( ref.p2.x - ref.p1.x ) / ( kbd->cols + 1 );
 
-	// printf( "DrawKeypad kW=%d from (%d,%d) %d\r\n", kW, ref.p2.x, ref.p1.x, kbd->cols+1);
+	printf( "\r\nDrawKeypad kW=%d from (%d,%d) %d", kW, ref.p2.x, ref.p1.x, kbd->cols + 1 );
+
 	r.p1.y += kH;
 
 	if ( shift )
@@ -323,6 +329,8 @@ void DrawKeypad( void )
 
 	while ( *p || *( p + 2 ) )
 	{
+
+
 		if ( *p == 0 )
 		{
 			r.p1.x = ref.p1.x;
@@ -337,7 +345,7 @@ void DrawKeypad( void )
 				r.p2.x = r.p1.x + ( kW * *p ) / 10;
 				r.p2.y = r.p1.y + kH;
 
-				DrawKey( r, *symbol, false );
+				DrawKey( r, *symbol, FALSE );
 			}
 
 			r.p1.x += ( kW * *p ) / 10;
@@ -580,14 +588,20 @@ const keyboard_t * GetKeyboard( void )
 }
 
 
-_KEYPAD *Keypad_CreateObj( color_t fore,color_t back )
+_KEYPAD *Keypad_CreateObj( color_t _fore, color_t _back )
 {
 	_KEYPAD *obj = &KEYPAD_Obj;
 
 	ra = RA8875_CreateObj( );
 
-	fore = Blue;
-	back = White;
+	shift = false;
+    enter_key = KYBD_SYM_ENTER;
+    esc_key   = KYBD_SYM_ESCAPE;
+    user_font = NULL;
+    user_font_scale = 0;
+
+	fore = _fore;
+	back = _back;
 
 	obj->shift = false;
 

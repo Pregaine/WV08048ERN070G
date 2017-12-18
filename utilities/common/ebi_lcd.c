@@ -171,23 +171,23 @@ void LCD_Init( void )
 	// #else
 	//	HT32F_DVB_GPxConfig(LCD_EBI_RS1_GPIO_ID, LCD_EBI_RS1_AFIO_PIN, LCD_EBI_RS1_AFIO_MODE);
 	// #endif
-	
+
 	// AFIO_GPxConfig(GPIO_WAIT, WAIT, AFIO_FUN_GPIO);
 	// GPIO_DirectionConfig(HTCFG_WAIT,WAIT,GPIO_DIR_OUT);
 	// Control
-	
+
 	// AFIO_GPxConfig( GPIO_CS,CS,AFIO_FUN_GPIO );
 	// AFIO_GPxConfig( GPIO_RD,RD,AFIO_FUN_GPIO );
 
 	// AFIO_GPxConfig(GPIO_WR, WR, AFIO_FUN_GPIO);
-	
+
 	AFIO_GPxConfig( GPIO_DC, DC, AFIO_FUN_GPIO );
 
 	// GPIO_DirectionConfig( HTCFG_CS,CS,GPIO_DIR_OUT );
 	// GPIO_DirectionConfig( HTCFG_RD,RD,GPIO_DIR_OUT );
 
 	// GPIO_DirectionConfig( HTCFG_WR,WR,GPIO_DIR_OUT );
-	
+
 	GPIO_DirectionConfig( HTCFG_DC, DC, GPIO_DIR_OUT );
 
 	AFIO_GPxConfig( GPIO_DIP,DIP,AFIO_FUN_GPIO );
@@ -265,7 +265,7 @@ void LCD_Init( void )
 	EBI_InitStructure.EBI_WriteSetupTime = 3;
 	EBI_InitStructure.EBI_WriteStrobeTime = 3;
 	EBI_InitStructure.EBI_WriteHoldTime = 3;
-	
+
 #endif
 
 	EBI_InitStructure.EBI_ReadSetupTime  = 3;
@@ -277,7 +277,7 @@ void LCD_Init( void )
 	EBI_InitStructure.EBI_PageHitMode 	 = EBI_PAGEHITMODE_ADDINC;
 	EBI_InitStructure.EBI_PageAccessTime = 0xF;
 	EBI_InitStructure.EBI_PageOpenTime   = 0xFF;
-	
+
 	EBI_Init( &EBI_InitStructure );
 
 	EBI_Cmd( EBI_BANK_0,ENABLE );
@@ -296,11 +296,11 @@ void LCD_Config( void )
 	Delay100msec();
 	LCD_Reset( );
 
-	
+
 	// GPIO_WriteOutBits( HTCFG_RD, RD, SET );
 	LCD_Initial();
 
-	//Active_Window(0,799,0,479); 
+	//Active_Window(0,799,0,479);
 	CmdWrite( 0x01 );								//Display on
 	DataWrite( 0x80 );
 	Delay100msec();
@@ -340,14 +340,14 @@ void LCD_Reset( void )
 }
 
 
-void PWM1_duty_cycle( u8 setx ) //bit0~7 
+void PWM1_duty_cycle( u8 setx ) //bit0~7
 {
 	CmdWrite( 0x8b );								//PTNO
 	DataWrite( setx );
 }
 
 
-void PWM1_clock_ratio( u8 setx ) //bit0~3 
+void PWM1_clock_ratio( u8 setx ) //bit0~3
 {
 	u8 temp,temp1;
 	temp1				= setx & 0x0F;
@@ -381,39 +381,39 @@ void PWM1_fnuction_sel( void )
 void CmdWrite( u16 cmd )
 {
 	GPIO_WriteOutBits( HTCFG_DC, DC, SET );
-	
+
 	EBI_LCD->EBI_LCD_REG = cmd;
-	
+
 	GPIO_WriteOutBits( HTCFG_DC, DC, RESET );
 }
 
 
-void DataWrite( u16 cmd )
+void DataWrite( u16 data )
 {
 	GPIO_WriteOutBits( HTCFG_DC, DC, RESET );
-	
-	EBI_LCD->EBI_LCD_RAM = cmd;
-	
+
+	EBI_LCD->EBI_LCD_RAM = data;
+
 	GPIO_WriteOutBits( HTCFG_DC, DC, SET );
 }
 
 
-u8 DataRead( u16 cmd )
+u8 DataRead( u8 cmd )
 {
 	u8 Data;
-	
+
 	CmdWrite( cmd );
-	
+
 	// GPIO_WriteOutBits( HTCFG_RD, RD, RESET );
-	
+
 	GPIO_WriteOutBits( HTCFG_DC, DC, RESET );
-	
+
 	Data = EBI_LCD->EBI_LCD_RAM;
-	
+
 	// GPIO_WriteOutBits( HTCFG_RD,RD,SET );
 
 	GPIO_WriteOutBits( HTCFG_DC, DC, SET );
-	
+
 	return Data;
 }
 
@@ -421,7 +421,7 @@ u8 DataRead( u16 cmd )
 u8 LCD_StatusRead( void )
 {
 	u8 Data;
-	
+
 	// GPIO_WriteOutBits( HTCFG_RD, RD, RESET );
 
 	GPIO_WriteOutBits( HTCFG_DC, DC, RESET );
@@ -441,10 +441,10 @@ void LCD_Initial( void )
 	RA8875_PLL_ini();
 	CmdWrite( 0x10 );								//SYSR	 bit[4:3]=00 256 color	bit[2:1]=  00 8bit MPU interface
 
-	//DataWrite(0x0c); // if 8bit MCU interface   and 65k color display  
-	DataWrite( 0x0F );								// if 16bit MCU interface	and 65k color display  
+	//DataWrite(0x0c); // if 8bit MCU interface   and 65k color display
+	DataWrite( 0x0F );								// if 16bit MCU interface	and 65k color display
 
-	//==============	Display Window	800x480 ==================	
+	//==============	Display Window	800x480 ==================
 	CmdWrite( 0x04 );								//PCLK inverse
 	DataWrite( 0x81 );
 	Delay1msec();
@@ -477,7 +477,7 @@ void LCD_Initial( void )
 	CmdWrite( 0x1f );								//VPWR //VSYNC Polarity ,VSYNC Pulse Width[6:0]
 	DataWrite( 0x01 );								//VSYNC Pulse Width(PCLK) = (VPWR + 1)
 
-	//Active window  set 
+	//Active window  set
 	//setting active window X
 	CmdWrite( 0x30 );								//Horizontal Start Point 0 of Active Window (HSAW0)
 	DataWrite( 0x00 );								//Horizontal Start Point of Active Window [7:0]
@@ -578,7 +578,7 @@ void Horizontal_FontEnlarge_x1( void )
 
 
 /*********************************************************************************************************/ /**
-  * @brief	畫三角形第3個點 
+  * @brief	畫三角形第3個點
   * @retval None
   ***********************************************************************************************************/
 void Draw_Triangle( u16 X3,u16 Y3 )
@@ -604,9 +604,9 @@ void Chk_Busy( void )
 {
 	u8 temp;
 
-	do 
+	do
 	{
-		temp				= LCD_StatusRead();
+		temp = LCD_StatusRead();
 	}
 	while( ( temp & 0x80 ) == 0x80 );
 
@@ -616,7 +616,7 @@ void Chk_Busy( void )
 
 void Chk_Busy_BTE( void )
 {
-	do 
+	do
 	{
 	}
 	while( ( LCD_StatusRead() & 0x40 ) == 0x40 );
@@ -673,11 +673,11 @@ void Scroll_Offset( u16 X,u16 Y )
 {
 	CmdWrite( 0x24 );								//HOFS0
 	DataWrite( X );
-	CmdWrite( 0x25 );								//HOFS1	   
+	CmdWrite( 0x25 );								//HOFS1
 	DataWrite( X >> 8 );
 	CmdWrite( 0x26 );								//VOFS0
 	DataWrite( Y );
-	CmdWrite( 0x27 );								//VOFS1	   
+	CmdWrite( 0x27 );								//VOFS1
 	DataWrite( Y >> 8 );
 }
 
@@ -699,7 +699,7 @@ void Scroll( u16 X1,u16 X2,u16 Y1,u16 Y2 )
 
 void Active_Window( u16 XL,u16 XR,u16 YT,u16 YB )
 {
-	//setting active window X 
+	//setting active window X
 	CmdWrite( 0x30 );								//HSAW0
 	DataWrite( XL );
 	CmdWrite( 0x31 );								//HSAW1
@@ -753,7 +753,7 @@ void Print_Hex( u8 buf )
 	{
 		temp				|= 0x30;
 	}
-	else 
+	else
 	{
 		temp				= temp + 0x37;
 	}
@@ -767,7 +767,7 @@ void Print_Hex( u8 buf )
 	{
 		temp				|= 0x30;
 	}
-	else 
+	else
 	{
 		temp				= temp + 0x37;
 	}
@@ -910,7 +910,7 @@ void BTE_enable( void )
 }
 
 
-//REG[51h] 
+//REG[51h]
 void BTE_ROP_Code( u8 setx )
 {
 	CmdWrite( 0x51 );								//BECR1
@@ -978,7 +978,7 @@ void BTE_Source_Destination( u16 XL,u16 XR,u16 YT,u16 YB )
 
 	CmdWrite( 0x58 );								//HDBE0
 	DataWrite( XR );
-	CmdWrite( 0x59 );								//HDBE1 
+	CmdWrite( 0x59 );								//HDBE1
 	DataWrite( XR >> 8 );
 
 	temp				= YT;
@@ -1007,13 +1007,13 @@ void BTE_Size_setting( u16 width,u16 height )
 	CmdWrite( 0x5c );								//BEWR0 讀寫區域寬度
 	DataWrite( width );
 
-	CmdWrite( 0x5d );								//BEWR1 讀寫區域寬度	 
+	CmdWrite( 0x5d );								//BEWR1 讀寫區域寬度
 	DataWrite( width >> 8 );
 
 	CmdWrite( 0x5e );								//BEHR0 讀寫區域高度
 	DataWrite( height );
 
-	CmdWrite( 0x5f );								//BEHR1 讀寫區域高度	   
+	CmdWrite( 0x5f );								//BEHR1 讀寫區域高度
 	DataWrite( height >> 8 );
 }
 
@@ -1089,7 +1089,7 @@ void DrawCurve( u16 X,u16 Y,u16 R1,u16 R2,u8 ori,u16 BgColor,u16 FgColor,bool bF
 			{
 				Write_Dir( 0xA0,0x90 | 0x40 );
 			}
-			else 
+			else
 			{
 				Write_Dir( 0xA0,0x90 );
 			}
@@ -1101,7 +1101,7 @@ void DrawCurve( u16 X,u16 Y,u16 R1,u16 R2,u8 ori,u16 BgColor,u16 FgColor,bool bF
 			{
 				Write_Dir( 0xA0,0x91 | 0x40 );
 			}
-			else 
+			else
 			{
 				Write_Dir( 0xA0,0x91 );
 			}
@@ -1113,7 +1113,7 @@ void DrawCurve( u16 X,u16 Y,u16 R1,u16 R2,u8 ori,u16 BgColor,u16 FgColor,bool bF
 			{
 				Write_Dir( 0xA0,0x92 | 0x40 );
 			}
-			else 
+			else
 			{
 				Write_Dir( 0xA0,0x92 );
 			}
@@ -1125,7 +1125,7 @@ void DrawCurve( u16 X,u16 Y,u16 R1,u16 R2,u8 ori,u16 BgColor,u16 FgColor,bool bF
 			{
 				Write_Dir( 0xA0,0x93 | 0x40 );
 			}
-			else 
+			else
 			{
 				Write_Dir( 0xA0,0x93 );
 			}
@@ -1156,7 +1156,7 @@ void DrawCircle( u16 X,u16 Y,u16 R,u16 BgColor,u16 FgColor,bool bFill )
 	{
 		Write_Dir( 0x90,0x60 );
 	}
-	else 
+	else
 	{
 		Write_Dir( 0x90,0x40 );
 	}
@@ -1196,7 +1196,7 @@ void DrawRoundRect( u16 x1,u16 x2,u16 y1,u16 y2,u16 X,u16 Y,u16 R1,u16 R2,u16 Bg
 	{
 		Write_Dir( 0xA0,0xA0 | 0x40 );
 	}
-	else 
+	else
 	{
 		Write_Dir( 0xA0,0xA0 );
 	}
@@ -1234,7 +1234,7 @@ void DrawEllipse( u16 X,u16 Y,u16 R1,u16 R2,u16 BgColor,u16 FgColor,bool bFill )
 	{
 		Write_Dir( 0xA0,0xC0 );
 	}
-	else 
+	else
 	{
 		Write_Dir( 0xA0,0x80 );
 	}
@@ -1313,7 +1313,7 @@ void DrawTri( u16 x1,u16 x2,u16 x3,u16 y1,u16 y2,u16 y3,u16 BgColor,u16 FgColor,
 	{
 		Write_Dir( 0x90,0xA1 );
 	}
-	else 
+	else
 	{
 		Write_Dir( 0x90,0x81 );
 	}
@@ -1333,7 +1333,7 @@ void DrawRect( u16 left,u16 top,u16 right,u16 bottom,u16 BgColor,u16 FgColor,boo
 	{
 		Write_Dir( 0x90,0xB0 );
 	}
-	else 
+	else
 	{
 		Write_Dir( 0x90,0x90 );
 	}

@@ -278,7 +278,7 @@ void RA8875_PLL_ini(void);
 void PWM1_duty_cycle(u8 setx);
 void PWM1_clock_ratio(u8 setx);
 void PWM1_fnuction_sel(void);
-extern u8 DataRead( u16 cmd );
+
 void LCD_Initial(void);
 void CmdWrite(u16 cmd);
 void DataWrite(u16 cmd);
@@ -307,6 +307,14 @@ void Chk_Busy_BTE(void);
 
 extern void Chk_Busy(void);
 
+extern void CmdWrite( u16 cmd );
+extern void DataWrite( u16 data );
+extern u8 DataRead( u8 cmd );
+
+
+u16 LCD_ReadReg( u32 LCD_Reg_Index );
+
+
 
 //RA8875-8875
 void Clear_Active_Window(void);
@@ -326,9 +334,6 @@ void Write_Dir(u16 Cmd,u16 Data);
 void LCD_Init(void);
 void LCD_Config(void);
 void LCD_WriteReg(u32 LCD_Reg_Index, u32 LCD_Reg_Value);
-void WriteCmd(u16 data);
-void WriteData(u16 data);
-u16 LCD_ReadReg(u32 LCD_Reg_Index);
 void LCD_StarterSet(u32 X_Location, u32 Y_Location);
 void LCD_WriteRAMPrior(void);
 void LCD_WriteRAM(u32 RGB_Set);

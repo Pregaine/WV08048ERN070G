@@ -1,8 +1,10 @@
 #include "ht32.h"
 #include "ht32_board.h"
+#include "common/ebi_lcd.h"
 #include "./FatFS/tff.h"
 #include "RA8875.h"
 #include "Converter.h"
+
 
 _PicturePack PicturePack;
 
@@ -19,6 +21,428 @@ uint8_t extFontHeight;          ///< computed from the font table when the user 
 uint8_t extFontWidth;           ///< computed from the font table when the user sets the font
 
 loc_t cursor_x, cursor_y;       ///< used for external fonts only
+
+
+dim_t fontheight( void )
+{
+    if( font == NULL )
+    {
+        // return ( ( ( ReadCommand( 0x22 ) >> 0 ) & 0x3 ) + 1 ) * 16;
+		return ( ( ( DataRead( 0x22 ) >> 0 ) & 0x3 ) + 1 ) << 4;
+	}
+    else
+    {
+        return extFontHeight;
+    }
+}
+
+dim_t width( void )
+{
+    if( portraitmode )
+        return screenheight;
+    else
+        return screenwidth;
+}
+
+
+dim_t height( void )
+{
+    if( portraitmode )
+        return screenwidth;
+    else
+        return screenheight;
+}
+
+/// @todo add a timeout and return false, but how long
+/// to wait since some operations can be very long.
+bool _WaitWhileReg( uint8_t reg, uint8_t mask )
+{
+	#if 0
+
+    int i = 20000 / POLLWAITuSec; // 20 msec max
+
+    while ( i-- && ReadCommand( reg ) & mask )
+    {
+        wait_us(POLLWAITuSec);
+
+        COUNTIDLETIME(POLLWAITuSec);
+
+        if (idle_callback)
+        {
+            if ( external_abort == (*idle_callback)(command_wait, 0) )
+            {
+                return false;
+            }
+        }
+    }
+    if( i )
+        return true;
+    else
+        return false;
+
+    #endif
+
+    return FALSE;
+}
+
+
+RetCode_t WriteCommand( u8 command, u16 data )
+{
+	/*
+    _select(true);
+
+    _spiwrite( 0x80 );            // RS:1 (Cmd/Status), RW:0 (Write)
+
+    _spiwrite( command );
+
+    if( data <= 0xFF )
+    {
+    	// only if in the valid range
+        _spiwrite(0x00);
+        _spiwrite(data);
+    }
+
+	 _select(false);
+    */
+
+    CmdWrite( command );
+
+    DataWrite( data );
+
+    return noerror;
+}
+
+
+unsigned char ReadStatus( void )
+{
+    unsigned char data;
+
+    // _spiwrite(0xC0);            // RS:1 (Cmd/Status), RW:1 (Read) (Read STSR)
+
+    // data = _spiread();
+
+    return data;
+}
+
+
+RetCode_t _writeColorTrio( u8 regAddr, color_t color )
+{
+    RetCode_t rt = noerror;
+
+	/*
+    if (screenbpp == 16)
+    {
+        WriteCommand(regAddr+0, (color>>11));                  // BGCR0
+        WriteCommand(regAddr+1, (unsigned char)(color>>5));    // BGCR1
+        rt = WriteCommand(regAddr+2, (unsigned char)(color));  // BGCR2
+
+    }
+    else
+    {
+        uint8_t r, g, b;
+
+        // RRRR RGGG GGGB BBBB      RGB
+        // RRR   GGG    B B
+        r = (uint8_t)((color) >> 13);
+        g = (uint8_t)((color) >> 8);
+        b = (uint8_t)((color) >> 3);
+        WriteCommand(regAddr+0, r);  // BGCR0
+        WriteCommand(regAddr+1, g);  // BGCR1
+        rt = WriteCommand(regAddr+2, b);  // BGCR2
+    }
+    */
+
+    WriteCommand( regAddr + 0, ( color >>11 ) );        // BGCR0
+
+    WriteCommand( regAddr + 1, ( u8 )( color >>5 ) );   // BGCR1
+
+    rt = WriteCommand( regAddr + 2, ( u8 )( color ) );  // BGCR2
+
+    return rt;
+}
+
+color_t _readColorTrio( u8 regAddr )
+{
+    color_t color;
+
+    u8 r, g, b;
+
+    r = DataRead( regAddr + 0 );
+	g = DataRead( regAddr + 1 );
+	b = DataRead( regAddr + 2 );
+
+	// 000R RRRR 00GG GGGG 000B BBBB
+	// RRRR RGGG GGGB BBBB
+	color  = (r & 0x1F) << 11;
+	color |= (g & 0x3F) << 5;
+	color |= (b & 0x1F);
+
+	/*
+
+	r = ReadCommand( regAddr + 0  );
+    g = ReadCommand( regAddr + 1 );
+    b = ReadCommand( regAddr + 2 );
+
+    if (screenbpp == 16)
+    {
+        // 000R RRRR 00GG GGGG 000B BBBB
+        // RRRR RGGG GGGB BBBB
+        color  = (r & 0x1F) << 11;
+        color |= (g & 0x3F) << 5;
+        color |= (b & 0x1F);
+    } else {
+        // RRRG GGBB
+        // RRRR RGGG GGGB BBBB
+        color  = (r & 0x07) << 13;
+        color |= (g & 0x07) << 8;
+        color |= (b & 0x03) << 3;
+    }
+
+	*/
+
+    return color;
+}
+
+
+color_t GetForeColor( void )
+{
+    return _readColorTrio( 0x63 );
+
+}
+
+
+RetCode_t SetGraphicsCursor( loc_t x, loc_t y )
+{
+
+    WriteCommand(0x46, x);
+    WriteCommand(0x48, y);
+
+    return noerror;
+}
+
+RetCode_t _StartGraphicsStream( void )
+{
+    WriteCommand( 0x40, 0x00 );    	// Graphics write mode
+
+    CmdWrite( 0x02 );         		// Prepare for streaming data
+
+    return noerror;
+}
+
+RetCode_t _EndGraphicsStream( void )
+{
+    return noerror;
+}
+
+/// @todo add a timeout and return false, but how long
+/// to wait since some operations can be very long.
+bool _WaitWhileBusy( uint8_t mask )
+{
+    // int i = 20000/POLLWAITuSec; // 20 msec max
+	int i = 20000;
+
+    while ( i-- && ReadStatus( ) & mask )
+    {
+        __NOP;
+        // wait_us(POLLWAITuSec);
+
+        // COUNTIDLETIME(POLLWAITuSec);
+
+        /*
+
+
+        if (idle_callback) {
+            if (external_abort == (*idle_callback)(status_wait, 0)) {
+                return false;
+            }
+        }
+        */
+    }
+
+    if( i )
+        return TRUE;
+    else
+        return FALSE;
+
+}
+
+
+RetCode_t background( color_t color )
+{
+    // GraphicsDisplay::background(color);
+
+    return _writeColorTrio( 0x60, color );
+}
+
+RetCode_t foreground( color_t color )
+{
+    // GraphicsDisplay::foreground(color);
+
+    return _writeColorTrio( 0x63, color );
+}
+
+
+RetCode_t pixelStream( color_t * p, uint32_t count, loc_t x, loc_t y )
+{
+
+    SetGraphicsCursor( x, y );
+
+    _StartGraphicsStream( );
+
+    /*
+    _select( true );
+
+    _spiwrite(0x00);         // Cmd: write data
+
+    while (count--)
+    {
+
+		_spiwrite(*p >> 8);
+		_spiwrite(*p & 0xFF);
+
+        p++;
+    }
+
+    _select(false);
+    */
+
+   	while (count--)
+    {
+		DataWrite( *p );
+        p++;
+    }
+
+    _EndGraphicsStream();
+
+    return( noerror );
+}
+
+
+RetCode_t pixel( loc_t x, loc_t y )
+{
+    RetCode_t ret;
+
+    color_t color = GetForeColor( );
+
+    ret = pixelStream( &color, 1, x, y );
+
+    return ret;
+}
+
+RetCode_t line( loc_t x1, loc_t y1, loc_t x2, loc_t y2 )
+{
+	unsigned char drawCmd = 0x00;       // Line
+
+    if (x1 == x2 && y1 == y2)
+    {
+        pixel(x1, y1);
+    }
+    else
+    {
+        WriteCommand( 0x91, x1 );
+        WriteCommand( 0x93, y1 );
+        WriteCommand( 0x95, x2 );
+        WriteCommand( 0x97, y2 );
+
+        WriteCommand( 0x90, drawCmd );
+        WriteCommand( 0x90, 0x80 + drawCmd ); // Start drawing.
+
+        if ( !_WaitWhileReg(0x90, 0x80) )
+        {
+            return external_abort;
+        }
+    }
+
+    return noerror;
+}
+
+
+
+
+RetCode_t rect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, fill_t fillit )
+{
+    RetCode_t ret = noerror;
+    unsigned char drawCmd = 0x10;   // Rectangle
+
+    printf( "\r\nDraw rect top left %d %d", x1, y1 );
+
+    printf( "\r\nDraw rect bot right %d %d", x2, y2 );
+
+    printf( "\r\nDraw rect fill %d", fillit );
+
+    // check for bad_parameter
+    if( x1 < 0 || x1 >= screenwidth || x2 < 0 || x2 >= screenwidth
+     || y1 < 0 || y1 >= screenheight || y2 < 0 || y2 >= screenheight )
+    {
+        ret = bad_parameter;
+
+        printf( "\r\nDraw rect bad_parameter" );
+    }
+    else
+    {
+        if( x1 == x2 && y1 == y2 )
+        {
+            pixel( x1, y1 );
+            printf( "\r\nDraw pixel %d" );
+        }
+        else if( x1 == x2 )
+        {
+            line( x1, y1, x2, y2 );
+            printf( "\r\nDraw line %d" );
+        }
+        else if ( y1 == y2 )
+        {
+            line( x1, y1, x2, y2 );
+            printf( "\r\nDraw line %d" );
+        }
+        else
+        {
+			printf( "\r\nDraw other %d" );
+
+            WriteCommand( 0x91, x1 );
+            WriteCommand( 0x93, y1 );
+            WriteCommand( 0x95, x2 );
+            WriteCommand( 0x97, y2 );
+
+            if ( fillit == FILL ) drawCmd |= 0x20;
+
+            WriteCommand( 0x90, drawCmd );
+
+            ret = WriteCommand( 0x90, 0x80 + drawCmd ); // Start drawing.
+
+            if( !_WaitWhileReg( 0x90, 0x80 ) )
+            {
+                return external_abort;
+            }
+        }
+    }
+
+    return ret;
+}
+
+
+//
+// Rectangle functions all mostly helpers to the basic rectangle function
+//
+
+RetCode_t fillrect( rect_t r, color_t color, fill_t fillit )
+{
+	foreground( color );
+
+    return rect( r.p1.x, r.p1.y, r.p2.x, r.p2.y, fillit );
+}
+
+dim_t fontwidth( void )
+{
+	printf( "\r\nfontwidth" );
+
+    if ( font == NULL )
+        return ( ( ( DataRead( 0x22 ) >> 2 ) & 0x3 ) + 1 ) * 8;
+    else
+        return extFontWidth;
+
+
+}
 
 
 _PicturePack * LoadSD_DataDescription( const char * filename, u8 *dst_ptr )
@@ -72,10 +496,344 @@ _PicturePack * LoadSD_DataDescription( const char * filename, u8 *dst_ptr )
 
 }
 
+RetCode_t SetTextCursor( loc_t x, loc_t y )
+{
+    // INFO("SetTextCursor(%d, %d)", x, y);
+
+	// set these values for non-internal fonts
+    cursor_x = x;
+    cursor_y = y;
+
+    WriteCommand( 0x2A, x );
+    WriteCommand( 0x2C, y );
+
+    return noerror;
+}
+
+RetCode_t SetTextCursorControl( cursor_t cursor, bool blink )
+{
+    unsigned char mwcr0 = DataRead( 0x40 ) & 0x0F; // retain direction, auto-increase
+    unsigned char mwcr1 = DataRead( 0x41 ) & 0x01; // retain currently selected layer
+
+    unsigned char horz = 0;
+    unsigned char vert = 0;
+
+    mwcr0 |= 0x80;                  // text mode
+
+    if( cursor != NOCURSOR ) mwcr0 |= 0x40;              // visible
+
+    if( blink ) mwcr0 |= 0x20;              // blink
+
+
+    WriteCommand(0x40, mwcr0);      // configure the cursor
+    WriteCommand(0x41, mwcr1);      // close the graphics cursor
+    WriteCommand(0x44, 0x1f);       // The cursor flashing cycle
+
+    switch ( cursor )
+    {
+        case IBEAM:
+            horz = 0x01;
+            vert = 0x1F;
+            break;
+        case UNDER:
+            horz = 0x07;
+            vert = 0x01;
+            break;
+        case BLOCK:
+            horz = 0x07;
+            vert = 0x1F;
+            break;
+        case NOCURSOR:
+        default:
+            break;
+    }
+
+    WriteCommand(0x4e, horz);       // The cursor size horz
+    WriteCommand(0x4f, vert);       // The cursor size vert
+
+    return noerror;
+}
+
+
+RetCode_t SetTextFont( font_t font)
+{
+    if ( /*font >= RA8875::ISO8859_1 && */ font <= ISO8859_4 )
+    {
+        WriteCommand(0x21, (unsigned int)(font) );
+
+        return noerror;
+    }
+    else
+    {
+        return bad_parameter;
+    }
+}
+
+const uint8_t* GetUserFont( void )
+{
+	printf( "\r\nGetUserFont" );
+
+	return font;
+}
+
+RetCode_t GetTextFontSize( HorizontalScale *hScale, VerticalScale *vScale )
+{
+
+	// Font Control Register1 22h
+    unsigned char reg = DataRead( 0x22 );
+
+
+    if (hScale)
+        *hScale = 1 + (reg >> 2) & 0x03;
+    if (vScale)
+        *vScale = 1 + reg & 0x03;
+
+    return noerror;
+}
+
+
+
+
+RetCode_t SetTextFontSize( HorizontalScale hScale, VerticalScale vScale )
+{
+    unsigned char reg = DataRead( 0x22 );
+
+    printf( "\r\nRetCode_t SetTextFontSize( HorizontalScale hScale, VerticalScale vScale )" );
+
+    if (vScale == -1)
+        vScale = hScale;
+
+    if ( hScale >= 1 && hScale <= 4 && vScale >= 1 && vScale <= 4)
+    {
+        reg &= 0xF0;    // keep the high nibble as is.
+        reg |= ((hScale - 1) << 2);
+        reg |= ((vScale - 1) << 0);
+
+        WriteCommand( 0x22, reg );
+
+        printf( "\r\nSetTextFontSize return noerror" );
+
+        return noerror;
+    }
+    else
+    {
+		printf( "\r\nSetTextFontSize return bad_parameter" );
+
+        return bad_parameter;
+    }
+
+}
+
+loc_t GetTextCursor_Y(void)
+{
+    loc_t y;
+
+    if (font == NULL)
+        y = DataRead( 0x2C ) | (DataRead(0x2D) << 8);
+    else
+        y = cursor_y;
+
+    return y;
+}
+
+
+loc_t GetTextCursor_X(void)
+{
+    loc_t x;
+
+    if ( font == NULL )
+        x = DataRead( 0x2A ) | ( DataRead( 0x2B ) << 8 );
+    else
+        x = cursor_x;
+
+    return x;
+}
+
+point_t GetTextCursor( void )
+{
+    point_t p;
+
+    p.x = GetTextCursor_X( );
+    p.y = GetTextCursor_Y( );
+
+    return p;
+}
+
+// Questions to ponder -
+// - if we choose to wrap to the next line, because the character won't fit on the current line,
+//      should it erase the space to the width of the screen (in case there is leftover junk there)?
+// - it currently wraps from the bottom of the screen back to the top. I have pondered what
+//      it might take to scroll the screen - but haven't thought hard enough about it.
+//
+int _external_putc(int c)
+{
+	/*
+    if (c)
+    {
+        if (c == '\r') {
+            cursor_x = windowrect.p1.x;
+        } else if (c == '\n') {
+            cursor_y += extFontHeight;
+        } else {
+            dim_t charWidth, charHeight;
+            const uint8_t * charRecord;
+
+            charRecord = getCharMetrics( c, &charWidth, &charHeight );
+            // int advance = charwidth(c);
+            // INFO("(%d,%d) - (%d,%d):(%d,%d), charWidth: %d '%c", cursor_x, cursor_y,
+                windowrect.p1.x, windowrect.p1.y, windowrect.p2.x, windowrect.p2.y,
+                charWidth, c);
+            if (charRecord) {
+                //cursor_x += advance;
+                if (cursor_x + charWidth >= windowrect.p2.x) {
+                    cursor_x = windowrect.p1.x;
+                    cursor_y += charHeight;
+                }
+                if (cursor_y + charHeight >= windowrect.p2.y) {
+                    cursor_y = windowrect.p1.y;               // @todo Should it scroll?
+                }
+                (void)character(cursor_x, cursor_y, c);
+                cursor_x += charWidth;
+            }
+        }
+    }
+    */
+
+    return c;
+}
+
+
+int _internal_putc(int c)
+{
+    if( c )
+    {
+        unsigned char mwcr0;
+
+        mwcr0 = DataRead( 0x40 );
+
+        if ( ( mwcr0 & 0x80 ) == 0x00 )
+        {
+            WriteCommand( 0x40, 0x80 | mwcr0 );    // Put in Text mode if not already
+        }
+
+        if( c == '\r' )
+        {
+            loc_t x;
+
+            x = DataRead( 0x30 ) | ( DataRead( 0x31 ) << 8 );   // Left edge of active window
+
+            WriteCommand( 0x2A, x );
+        }
+        else if( c == '\n' )
+        {
+            loc_t y;
+
+            y = DataRead( 0x2C ) | ( DataRead( 0x2D ) << 8 );   // current y location
+
+            y += fontheight( );
+
+            if ( y >= height( ) )               // @TODO after bottom of active window, then scroll window?
+                y = 0;
+
+            WriteCommand( 0x2C, y );
+        }
+        else
+        {
+            CmdWrite( 0x02 );                // RA8875 Internal Fonts
+
+            DataWrite( c );
+
+            _WaitWhileBusy( 0x80 );
+
+        }
+    }
+
+    return c;
+}
+
+
+int _putc( int c )
+{
+    if( font == NULL )
+    {
+        return _internal_putc( c );
+    }
+    else
+    {
+        return _external_putc( c );
+    }
+}
+
+
+RetCode_t roundrect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, dim_t radius1, dim_t radius2, color_t color, fill_t fillit )
+{
+    RetCode_t ret = noerror;
+    u8 drawCmd = 0x20;       // Rounded Rectangle
+
+    foreground( color );
+
+
+    if( x1 < 0 || x1 >= screenwidth || x2 < 0 || x2 >= screenwidth
+     || y1 < 0 || y1 >= screenheight || y2 < 0 || y2 >= screenheight )
+    {
+        ret = bad_parameter;
+    }
+    else if (x1 > x2 || y1 > y2 || (radius1 > (x2-x1)/2) || (radius2 > (y2-y1)/2) )
+    {
+        ret = bad_parameter;
+    }
+    else if ( x1 == x2 && y1 == y2 )
+    {
+        pixel( x1, y1 );
+    }
+    else if ( x1 == x2 )
+    {
+        line( x1, y1, x2, y2 );
+    }
+    else if ( y1 == y2 )
+    {
+        line( x1, y1, x2, y2 );
+    }
+    else
+    {
+        WriteCommand( 0x91, x1 );
+        WriteCommand( 0x93, y1 );
+        WriteCommand( 0x95, x2 );
+        WriteCommand( 0x97, y2 );
+
+        WriteCommand( 0xA1, radius1 );
+        WriteCommand( 0xA3, radius2 );
+
+        // Should not need this...
+        WriteCommand(0xA5, 0);
+        WriteCommand(0xA7, 0);
+
+        if (fillit == FILL) drawCmd |= 0x40;
+
+        WriteCommand(0xA0, drawCmd);
+        WriteCommand(0xA0, 0x80 + drawCmd); // Start drawing.
+
+        if( !_WaitWhileReg(0xA0, 0x80) )
+        {
+            return external_abort;
+        }
+    }
+
+    return ret;
+}
+
+//
+// rounded rectangle functions are mostly helpers to the base round rect
+//
+RetCode_t fillroundrect( rect_t r, dim_t radius1, dim_t radius2, color_t color, fill_t fillit )
+{
+    return roundrect( r.p1.x, r.p1.y, r.p2.x, r.p2.y , radius1, radius2, color, fillit );
+}
+
 void LoadFile( const char *filename, u8 *dst_ptr, DWORD file_index, u16 size )
 {
-    FIL 			fsrc; 	/* File object		  */
-    UINT			dcnt = 0;
+    FIL fsrc; 	/* File object		  */
+    UINT dcnt = 0;
 
 	FRESULT result = FR_NOT_READY;
 
@@ -134,7 +892,9 @@ void DrawPictuure( _PicturePack *pic, u16 size  )
 
 		XY_Coordinate( pic->move_x, pic->move_y );
 
-		CmdWrite( 0x02 );
+		// CmdWrite( 0x02 );
+
+		_StartGraphicsStream( );
 
 		EBI_LCD->EBI_LCD_RAM = ( u16 )( pic->data_ptr[ index ].word_data );
 
@@ -198,46 +958,44 @@ void DrawPictureFromSD( const char * filename, u8 *dst_ptr, u16 x, u16 y )
 }
 
 
-dim_t fontheight( void )
-{
-    if( font == NULL )
-    {
-        // return ( ( ( ReadCommand( 0x22 ) >> 0 ) & 0x3 ) + 1 ) * 16;
-		return ( ( ( DataRead( 0x22 ) >> 0 ) & 0x3 ) + 1 ) << 4;
-	}
-    else
-    {
-        // return extFontHeight;
-    }
-}
-
-dim_t width( void )
-{
-    if( portraitmode )
-        return screenheight;
-    else
-        return screenwidth;
-}
-
-
-dim_t height( void )
-{
-    if( portraitmode )
-        return screenwidth;
-    else
-        return screenheight;
-}
-
-
 _RA8875 * RA8875_CreateObj( void )
 {
 	_RA8875 *obj = &RA8875_Obj;
 
-	obj->fontheight = fontheight;
+	screenwidth = 800;
+	screenheight = 480;
 
 	obj->height = height;
 
 	obj->width = width;
+
+
+
+	obj->fillrect = fillrect;
+
+	obj->roundrect = roundrect;
+
+	obj->fillroundrect = fillroundrect;
+
+	obj->SetTextCursor = SetTextCursor;
+
+	obj->SetTextFontSize = SetTextFontSize;
+
+	obj->GetUserFont = GetUserFont;
+
+	obj->GetTextFontSize = GetTextFontSize;
+
+	obj->GetTextCursor = GetTextCursor;
+
+	obj->fontwidth = fontwidth;
+
+	obj->foreground = foreground;
+
+	obj->background = background;
+
+	obj->fontheight = fontheight;
+
+	obj->_putc = _putc;
 
 	return obj;
 }

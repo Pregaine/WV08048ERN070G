@@ -390,22 +390,25 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
 
     char name1[ 10 ];
 
-    // memcpy( &tiny, kp->GetKeyboard_FunPtr( ), sizeof( keyboard_t ) );
+    kp->SetKeyboard( NULL, KYBD_SYM_ENTER, KYBD_SYM_ESCAPE );
 
-    tiny.x = x;
-    tiny.y = y;
+    memcpy( &tiny, kp->GetKeyboard( ), sizeof( keyboard_t ) );
 
-    tiny.width  = w;
-    tiny.height = h;
+	tiny.x = x;
+	tiny.y = y;
+    tiny.width = w;
+    tiny.height=h;
+
+    printf( "\r\nFloatingSmallQWERTYTest" );
 
     // copy definition and then resize it
     // select the internal keyboard
     // now select this tiny keyboard
-    kp->SetKeyboard( &tiny, '=', 0 );
+    kp->SetKeyboard( &tiny, KYBD_SYM_ENTER, KYBD_SYM_ESCAPE );
 
-    kp->SetKeyboardFont( NULL, 1 );
+    kp->SetKeyboardFont( 0, 1 );
 
-    if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", FALSE, 0, TRUE ) )
+    if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", FALSE, 0, FALSE ) )
     {
     	/*
         LCD.foreground(BrightRed);
@@ -420,7 +423,7 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
 
 int main( void )
 {
-	int 			i	= 0;
+	// int i = 0;
 	u8				tStr[] = "";
 	u8				tStr2[9] = "";
 	u16 			temp;
@@ -449,16 +452,17 @@ int main( void )
 
 	Chk_Busy();
 
-	// kp = Keypad_CreateObj( Blue, White );
+	kp = Keypad_CreateObj( Red, White );
 
 	// FloatingSmallQWERTYTest( 50, 0, 200, 0 );
+	FloatingSmallQWERTYTest( 50, 0, 200, 0 );
 	// ---------------------------------------
 
 	// DrawPictureFromSD( "file1.dat", SD_ReadBuf, 100, 0 );
 
-    DrawPictureFromSD( "meter.dat", SD_ReadBuf, 150, 100 );
+    // DrawPictureFromSD( "meter.dat", SD_ReadBuf, 150, 100 );
 
-    DrawPictureFromSD( "test.dat", SD_ReadBuf, 500, 100 );
+    // DrawPictureFromSD( "test.dat", SD_ReadBuf, 500, 100 );
 
     // DrawPictureFromSD( "file1.dat", SD_ReadBuf, 200, 100 );
 
@@ -564,6 +568,7 @@ int main( void )
 
 	//KeyBoard_Int();
 	///*
+
 	while ( 1 )
 	{
 		//I2C_EEPROM_BufferWrite(mBuff2,0,32);

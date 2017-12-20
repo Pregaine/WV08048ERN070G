@@ -358,7 +358,7 @@ void Draw_Circle(vu16 X,vu16 Y,vu16 R);
 void Vertical_FontEnlarge_x2(void);
 void Draw_Triangle(u16 X3,u16 Y3);
 
-void DrawRect(u16 left,u16 top,u16 right,u16 bottom,u16 BgColor,u16 FgColor,bool bFill);
+extern void DrawRect(u16 left,u16 top,u16 right,u16 bottom,u16 BgColor,u16 FgColor,bool bFill);
 void DrawLine(u16 x1,u16 x2,u16 y1,u16 y2,u16 BgColor,u16 FgColor);
 void DrawTri(u16 x1,u16 x2,u16 x3,u16 y1,u16 y2,u16 y3,u16 BgColor,u16 FgColor,bool bFill);
 void DrawEllipse(u16 X,u16 Y,u16 R1,u16 R2,u16 BgColor,u16 FgColor,bool bFill);

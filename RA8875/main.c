@@ -7,9 +7,7 @@
 #include "RA8875.h"
 #include "Keypad.h"
 #include "DisplayDefs.h"
-
-#define false 0
-#define true  1
+#include "TimerManager.h"
 
 #if 0
 u8 rabit[1500] =
@@ -382,7 +380,75 @@ const unsigned char bw[2048] =
 
 u8 mBuff2[256] = "test";
 
+// Define a keyboard layout as a calculator-like keypad
+// 789 /(
+// 456 *)
+// 123 -
+// 00. +=
+const char numberkeys[] =
+{
+    5,0x01, 10,'7',10,'8',10,'9', 5,0x01, 10,'/',10,'(', 0,0,
+    5,0x01, 10,'4',10,'5',10,'6', 5,0x01, 10,'*',10,')', 0,0,
+    5,0x01, 10,'1',10,'2',10,'3', 5,0x01, 10,'-',10,KYBD_SYM_BS, 0,0,
+    5,0x01, 20,'0',       10,'.', 5,0x01, 10,'+',10,'=', 0,0,
+    0,0
+};
+
+// Define the implementation of that keyboard
+const keyboard_t altkeyboard =
+{
+    100,        // x=100; left edge
+    0,          // y=0; computed from bottom up
+    240,        // width=240
+    0,          // height=0; bottom of screen justified
+    4,          // rows
+    6,          // columns
+    numberkeys, // pointer to the keypad
+    numberkeys
+};
+
+
 _KEYPAD *kp;
+_RA8875 *lcd;
+
+
+void CalibrateTS(void)
+{
+    FIL *fh;
+    tpMatrix_t matrix;
+    RetCode_t r;
+
+    // r = lcd->TouchPanelCalibrate( "\r\nCalibrate the touch panel", &matrix, 15 );
+
+    lcd->printf( "TouchPanelCalibrate returned error code %d\r\n" );
+
+    lcd->printf( "TouchPanelCalibrate returned error code %d\r\n", r );
+
+    if ( r == noerror )
+    {
+    	/*
+        fh = fopen("/local/tpcal.cfg", "wb");
+
+        if ( fh )
+        {
+            fwrite(&matrix, sizeof(tpMatrix_t), 1, fh);
+            fclose(fh);
+        }
+        else
+        {
+            lcd.printf( "Cannot save calibration in /local/tpcal.cfg\r\n" );
+            wait_ms(1000);
+        }
+        */
+    }
+    else
+    {
+        lcd->printf( "TouchPanelCalibrate returned error code %d\r\n", r );
+
+       	wait_ms( 2000 );
+    }
+
+}
 
 void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
 {
@@ -406,7 +472,7 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
     // now select this tiny keyboard
     kp->SetKeyboard( &tiny, KYBD_SYM_ENTER, KYBD_SYM_ESCAPE );
 
-    kp->SetKeyboardFont( 0, 1 );
+    kp->SetKeyboardFont( 0, 3 );
 
     if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", FALSE, 0, FALSE ) )
     {
@@ -416,6 +482,26 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
         lcd.cls();
         lcd.SetTextCursor(0,40);
         lcd.printf("Compressed: %s\r\n", name1);
+        */
+    }
+}
+
+void CalculatorKeypadTest(void)
+{
+    char name1[20];
+
+    kp->SetKeyboard( &altkeyboard, '=', 0 );
+    kp->SetKeyboardFont( 0, 4 );
+
+    if( kp->GetString( name1, sizeof( name1 ), "Calc:", FALSE, 0, FALSE ) )
+    {
+    	/*
+        lcd.foreground(BrightRed);
+        lcd.background(Black);
+        lcd.cls();
+        lcd.SetTextCursor(0,40);
+
+        lcd.printf( "Calculator: %s\r\n", name1 );
         */
     }
 }
@@ -430,21 +516,27 @@ int main( void )
 	u8				lsd,msd;
 	int 			second;
 
-	RETARGET_Configuration();						//Retarget Related configuration
-	printf( "========== Initial ==========\r\n" );
+	RETARGET_Configuration( );						//Retarget Related configuration
+	printf( "\r\n========== Initial ==========" );
+
 	HT32F_DVB_LEDInit( HT_LED1 );
-	LCD_Init();
-	LCD_Config();
-	I2C_EEPROM_Init();
+	LCD_Init( );
+	LCD_Config( );
+	I2C_EEPROM_Init( );
 
 	NVIC_EnableIRQ( SDIO_IRQn );
 	NVIC_EnableIRQ( PDMACH6_IRQn ); 				// SDIO_RX
 	NVIC_EnableIRQ( PDMACH7_IRQn ); 				// SDIO_TX
 	f_mount( 0,&fs );
 
-	//Active_Window(0,16,0,16);
-	///*
-	Write_Dir( 0x8E,0x80 ); 						//Clean
+	/* SYSTICK configuration */
+  	SYSTICK_ClockSourceConfig( SYSTICK_SRC_STCLK );       // Default : CK_SYS/8
+  	SYSTICK_SetReloadValue( SystemCoreClock / 8 / 1000 ); // (CK_SYS/8/1000) = 1ms on chip
+  	SYSTICK_IntConfig( ENABLE );                          // Enable SYSTICK Interrupt
+
+	// Active_Window( 0, 16, 0, 16 );
+
+	Write_Dir( 0x8E, 0x80 ); 						//Clean
 	Chk_Busy();
 
 	CmdWrite( 0x02 );
@@ -452,10 +544,16 @@ int main( void )
 
 	Chk_Busy();
 
-	kp = Keypad_CreateObj( Red, White );
+	kp = Keypad_CreateObj( Blue, White );
+
+	lcd = RA8875_CreateObj( );
+
+	CalibrateTS( );
 
 	// FloatingSmallQWERTYTest( 50, 0, 200, 0 );
-	FloatingSmallQWERTYTest( 50, 0, 200, 0 );
+	FloatingSmallQWERTYTest( 75, 100, 0, 0 );
+
+	// CalculatorKeypadTest( );
 	// ---------------------------------------
 
 	// DrawPictureFromSD( "file1.dat", SD_ReadBuf, 100, 0 );
@@ -574,7 +672,7 @@ int main( void )
 		//I2C_EEPROM_BufferWrite(mBuff2,0,32);
 		HT32F_DVB_LEDToggle( HT_LED1 );
 
-		I2C_BufferRead( mBuff2,0x68,0,8 );			//0x50
+		// I2C_BufferRead( mBuff2,0x68,0,8 );			//0x50
 
 		//I2C_EEPROM_BufferRead(mBuff2,0, 8);
 		//for(i=0;i<8;i++){
@@ -610,30 +708,16 @@ int main( void )
 		//tStr2[0] = 0x31;
 		//tStr2[1] = 0x32;
 		//tStr2[2] = 0x33;
-		Chk_Busy();
+		// Chk_Busy();
 
 		// DrawString( 300,200,tStr2,3,3,FALSE,FALSE,White,Red );
 
 		//DrawString(10,300,mBuff2[i],0,0,FALSE,FALSE,Green,Purple);
 		//DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
-		// printf( "=====End=====\r\n" );
+		printf( "\r\n=====End=====" );
 
 		///*
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
-		Delay100msec();
+		wait_ms( 200 );
 
 		//*/
 	}
@@ -646,7 +730,7 @@ void openBMP3( const char * filename )
 	UINT			t	= 0,j = 0;
 	UINT			dcnt = 0;
 
-	result				= f_open( &fsrc,( const char * ) filename,FA_OPEN_EXISTING | FA_READ );
+	result	= f_open( &fsrc,( const char * ) filename,FA_OPEN_EXISTING | FA_READ );
 
 	if ( result == FR_OK )
 	{

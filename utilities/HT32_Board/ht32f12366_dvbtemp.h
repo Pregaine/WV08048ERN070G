@@ -38,6 +38,7 @@
 #include "common/i2c_eeprom.h"
 #include "common/spi_flash.h"
 #include "common/ebi_lcd.h"
+#include "TimerManager.h"
 
 /** @addtogroup Utilities
   * @{
@@ -85,7 +86,7 @@ typedef enum
   HT_LED2 = 1,
   HT_LED3 = 2,
   HT_LED4 = 3,
-  
+
 } LED_TypeDef;
 /**
   * @}

@@ -1,3 +1,6 @@
+#include "ht32.h"
+#include "ht32_board.h"
+#include <string.h>
 #include "Keypad.h"
 #include "RA8875.h"
 
@@ -53,7 +56,7 @@ int restore_hScale; // save scale
 int restore_vScale;
 int user_font_scale; // keyboard font scale
 
-const keyboard_t * kbd;
+const keyboard_t *kbd;
 
 char enter_key;
 char esc_key;
@@ -128,11 +131,11 @@ bool SetKeyboard( const keyboard_t * _kbd,char _enter_key,char _esc_key )
 
 	esc_key = _esc_key;
 
-	return true;
+	return TRUE;
 }
 
 
-bool SetKeyboardFont( const unsigned char * _font,int _fontscale )
+bool SetKeyboardFont( const unsigned char *_font, int _fontscale )
 {
 	if ( _font )
 	{
@@ -143,7 +146,7 @@ bool SetKeyboardFont( const unsigned char * _font,int _fontscale )
 		user_font_scale = _fontscale;
 	}
 
-	return true;
+	return TRUE;
 }
 
 
@@ -170,7 +173,7 @@ void DrawKey( rect_t r, char c, bool invert )
 		ra->SetTextCursorControl( NOCURSOR, FALSE );
 	}
 
-	ra->_putc( c );
+	ra->putc( c );
 
 	if ( invert )
 	{
@@ -231,12 +234,11 @@ void DrawInputPanel( const char * prompt )
 
 	ra->foreground( fore );
 	ra->background( back );
-	ra->SetTextCursor( r.p1.x,r.p1.y + 2 );
 
-	/*
+	ra->SetTextCursor( r.p1.x, r.p1.y + 2 );
+
 	ra->puts( prompt );
-	ra->puts( ":" );
-	*/
+	// ra->puts( "12345" );
 
 	userText = ra->GetTextCursor();
 
@@ -251,7 +253,9 @@ rect_t ComputeKeypadRect( void )
 	rect_t r;
 
 
-	printf( "\r\nComputeKeypadRect" );
+	printf( "\r\nComputeKeypadRect kbd->x %d", kbd->x  );
+
+	printf( "\r\nComputeKeypadRect kbd->y %d", kbd->y  );
 
 	if ( kbd->x <= 0 )
 	{
@@ -289,6 +293,16 @@ rect_t ComputeKeypadRect( void )
 		r.p2.y = r.p1.y + kbd->height - 1;
 	}
 
+	// r.p1.x = 10;
+	// r.p1.y = 100;
+	// r.p2.x = 300;
+	// r.p2.y = 300;
+
+	printf( "\r\nra->height() %d", ra->height() );
+	printf( "\r\nra->width() %d", ra->width() );
+	printf( "\r\nkbd->height %d", kbd->height );
+	printf( "\r\nkbd->width %d", kbd->width );
+
 	printf( "\r\nKeypadRect (%d,%d) - (%d,%d)", r.p1.x, r.p1.y, r.p2.x, r.p2.y );
 
 	return r;
@@ -306,6 +320,7 @@ void DrawKeypad( void )
 
     const char *p = kbd->keydef1;
     rect_t ref, r;
+    const char *symbol;
 
 	// fW = ra.fontwidth();
 	fH	= ra->fontheight();
@@ -329,8 +344,6 @@ void DrawKeypad( void )
 
 	while ( *p || *( p + 2 ) )
 	{
-
-
 		if ( *p == 0 )
 		{
 			r.p1.x = ref.p1.x;
@@ -338,14 +351,14 @@ void DrawKeypad( void )
 		}
 		else
 		{
-			const char *symbol = p + 1;
+			symbol = p + 1;
 
 			if ( *symbol >= 0x10 )
 			{
 				r.p2.x = r.p1.x + ( kW * *p ) / 10;
 				r.p2.y = r.p1.y + kH;
 
-				DrawKey( r, *symbol, FALSE );
+				DrawKey( r, *symbol, TRUE );
 			}
 
 			r.p1.x += ( kW * *p ) / 10;
@@ -360,9 +373,10 @@ void DrawKeypad( void )
 
 char isKeyTouched( point_t * point,rect_t * rectTouched )
 {
-#if 0
+
+#if 1
 	dim_t kW;
-	dim_t kH = ra.fontheight() + 4;
+	dim_t kH = ra->fontheight( ) + 4;
 
 	const char * p = kbd->keydef1;
 	rect_t r = ComputeKeypadRect();
@@ -392,7 +406,7 @@ char isKeyTouched( point_t * point,rect_t * rectTouched )
 				r.p2.x = r.p1.x + ( kW * *p ) / 10;
 				r.p2.y = r.p1.y + kH;
 
-				if ( ra.Intersect( r,*point ) )
+				if ( ra->Intersect( r, *point ) )
 				{
 					if ( rectTouched )
 					{
@@ -417,27 +431,32 @@ char isKeyTouched( point_t * point,rect_t * rectTouched )
 
 void ShowBufferMetrics( void )
 {
-#if 0
+
 	rect_t r = ComputeKeypadRect();
 
-	ra.SetTextCursor( r.p2.x - 1 - ra.fontwidth() * 5,r.p1.y + 2 );
-	ra.printf( "%02d/%02d",pNext - pStart,bufSize ); // "001/100"
+	ra->SetTextCursor( r.p2.x - 1 - ra->fontwidth() * 5,r.p1.y + 2 );
 
-	//ra.SetTextCursor(ra.width()-1-ra.fontwidth()*7, ra.height()-1-ra.fontheight());
-	ra.SetTextCursor( userText.x,userText.y );
-	ra.SetTextCursorControl( RA8875::UNDER );
+	ra->printf( "%02d/%02d", pNext - pStart,bufSize ); // "001/100"
 
-#endif
+	ra->SetTextCursor( ra->width( ) - 1 - ra->fontwidth() * 7, ra->height() - 1 - ra->fontheight( ) );
+
+	ra->SetTextCursor( userText.x,userText.y );
+
+	ra->SetTextCursorControl( UNDER, FALSE );
 }
 
 
-bool GetString( char * buffer,unsigned char size,
-	const char * prompt,bool initFromBuffer,char mask,bool auto_close )
+bool GetString( char *buffer, unsigned char size, const char *prompt, bool initFromBuffer, char mask, bool auto_close )
 {
 	point_t point =
 	{
 		0,0
 	};
+
+    TouchCode_t is;
+
+    rect_t touchRect;
+
 	bool success = FALSE;
 
 	pStart = pNext = buffer;
@@ -445,60 +464,64 @@ bool GetString( char * buffer,unsigned char size,
 
 	DrawInputPanel( prompt );
 
-#if 0
-
-	if ( initFromBuffer && strlen( buffer ) < size )
+	if ( initFromBuffer && ( strlen( buffer ) < size ) )
 	{
-		ra.SetTextCursor( userText );
-		ra.puts( buffer );
-		userText = ra.GetTextCursor();
+		ra->SetTextCursor( userText.x, userText.y );
+
+		ra->puts( buffer );
+
+		userText = ra->GetTextCursor();
 		pNext += strlen( buffer );
 	}
 
-	ShowBufferMetrics();
+	ShowBufferMetrics( );
 
+#if 1
 	while ( 1 )
 	{
-		if ( touch == ra.TouchPanelReadable( &point ) )
+		if ( touch == ra->TouchPanelReadable( &point ) )
 		{
-			rect_t touchRect;
-
 			// find out if they touched a key;
-			char key = isKeyTouched( &point,&touchRect );
+			char key = isKeyTouched( &point, &touchRect );
 
 			if ( key )
 			{
-				DrawKey( touchRect,key,true );
+				DrawKey( touchRect, key, TRUE );
 
-				wait_ms( 50 );
-
-				TouchCode_t is;
+				// wait_ms( 50 );
 
 				do
 				{
-					is	= ra.TouchPanelReadable( NULL );
+					is	= ra->TouchPanelReadable( NULL );
 
-					//printf("is: %d\r\n", is);
+					printf( "is: %d\r\n", is );
 				}
 				while( is != no_touch );
 
-				DrawKey( touchRect,key );
+				DrawKey( touchRect, key, FALSE );
 			}
 
-			//printf("Touch %02X at (%d,%d)\r\n", key, point.x, point.y);
-			//printf("Touch %02X at (%d,%d)\r\n", key, point.x, point.y);
+			printf( "\r\nTouch %02X at (%d,%d)", key, point.x, point.y );
+			printf( "\r\nTouch %02X at (%d,%d)", key, point.x, point.y );
+
 			if ( key == enter_key )
 			{
 				*pNext = '\0';
-				ra.SetTextCursorControl();
-				success = true;
+
+				ra->SetTextCursorControl( NOCURSOR, FALSE );
+
+				success = TRUE;
+
 				break;
 			}
 			else if ( key == esc_key )
 			{
 				*buffer = '\0';
-				ra.SetTextCursorControl();
-				success = false;
+
+				ra->SetTextCursorControl( NOCURSOR, FALSE );
+
+				success = FALSE;
+
 				break;
 			}
 			else if ( key == KYBD_SYM_BS )
@@ -508,50 +531,54 @@ bool GetString( char * buffer,unsigned char size,
 					pNext--;
 
 					// blank the last char
-					userText.x -= ra.fontwidth();
-					ra.SetTextCursor( userText.x,userText.y );
-					ra.putc( ' ' );
+					userText.x -= ra->fontwidth();
+
+					ra->SetTextCursor( userText.x, userText.y );
+
+					ra->putc( ' ' );
 				}
 			}
 			else if ( key == KYBD_SYM_TAB )
 			{
 				*pNext++ = ' ';
 
-				ra.SetTextCursor( userText.x,userText.y );
+				ra->SetTextCursor( userText.x,userText.y );
 
-				ra.putc( ' ' );
+				ra->putc( ' ' );
 
-				userText.x += ra.fontwidth();
+				userText.x += ra->fontwidth();
 			}
 			else if ( key == KYBD_SYM_SHIFT )
 			{
 				shift = !shift;
+
 				DrawKeypad();
 			}
 			else if ( key )
 			{
 				*pNext++ = key;
-				ra.SetTextCursor( userText.x,userText.y );
+
+				ra->SetTextCursor( userText.x,userText.y );
 
 				if ( mask )
 				{
-					ra.putc( mask );
+					ra->putc( mask );
 				}
 				else
 				{
-					ra.putc( key );
+					ra->putc( key );
 				}
 
-				userText.x += ra.fontwidth();
+				userText.x += ra->fontwidth();
 			}
 
 			if ( ( pNext - buffer ) >= ( size - 1 ) )
 			{
 				*pNext = '\0';
 
-				ra.SetTextCursorControl();
+				ra->SetTextCursorControl( NOCURSOR, FALSE );
 
-				success = true;
+				success = TRUE;
 
 				break;
 			}
@@ -594,7 +621,7 @@ _KEYPAD *Keypad_CreateObj( color_t _fore, color_t _back )
 
 	ra = RA8875_CreateObj( );
 
-	shift = false;
+	shift = FALSE;
     enter_key = KYBD_SYM_ENTER;
     esc_key   = KYBD_SYM_ESCAPE;
     user_font = NULL;
@@ -603,7 +630,7 @@ _KEYPAD *Keypad_CreateObj( color_t _fore, color_t _back )
 	fore = _fore;
 	back = _back;
 
-	obj->shift = false;
+	obj->shift = FALSE;
 
 	obj->enter_key = KYBD_SYM_ENTER;
 
@@ -620,6 +647,7 @@ _KEYPAD *Keypad_CreateObj( color_t _fore, color_t _back )
 	obj->GetKeyboard = GetKeyboard;
 
 	obj->GetString = GetString;
+
 
 	return obj;
 }

@@ -80,8 +80,8 @@
                                                      (HANDLER == SYSTEMHANDLER_ALL))
 
 /* SysTick clock source                                                                                     */
-#define SYSTICK_SRC_STCLK                           ((u32)0xFFFFFFFB)
-#define SYSTICK_SRC_FCLK                            ((u32)0x00000004)
+#define SYSTICK_SRC_STCLK                           ( (u32)0xFFFFFFFB )
+#define SYSTICK_SRC_FCLK                            ( (u32)0x00000004 )
 
 #define IS_SYSTICK_CLOCK_SOURCE(SOURCE)             ((SOURCE == SYSTICK_SRC_STCLK) || \
                                                      (SOURCE == SYSTICK_SRC_FCLK) )

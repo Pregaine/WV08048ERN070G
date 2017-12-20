@@ -3,6 +3,7 @@
 #include "common/ebi_lcd.h"
 #include "./FatFS/tff.h"
 #include "RA8875.h"
+#include "RA8875_Touch.h"
 #include "Converter.h"
 
 
@@ -86,6 +87,7 @@ bool _WaitWhileReg( uint8_t reg, uint8_t mask )
 }
 
 
+
 RetCode_t WriteCommand( u8 command, u16 data )
 {
 	/*
@@ -113,6 +115,17 @@ RetCode_t WriteCommand( u8 command, u16 data )
 }
 
 
+RetCode_t WriteCommandW( uint8_t command, uint16_t data )
+{
+    WriteCommand( command, data & 0xFF );
+
+    WriteCommand( command+1, data >> 8 );
+
+    return noerror;
+}
+
+
+
 unsigned char ReadStatus( void )
 {
     unsigned char data;
@@ -120,6 +133,8 @@ unsigned char ReadStatus( void )
     // _spiwrite(0xC0);            // RS:1 (Cmd/Status), RW:1 (Read) (Read STSR)
 
     // data = _spiread();
+
+	data = LCD_StatusRead( );
 
     return data;
 }
@@ -239,11 +254,14 @@ RetCode_t _EndGraphicsStream( void )
 bool _WaitWhileBusy( uint8_t mask )
 {
     // int i = 20000/POLLWAITuSec; // 20 msec max
-	int i = 20000;
+	int i = 0xFFFFF;
 
-    while ( i-- && ReadStatus( ) & mask )
+    while ( i && ( ReadStatus( ) & mask ) )
     {
+		i --;
+
         __NOP;
+
         // wait_us(POLLWAITuSec);
 
         // COUNTIDLETIME(POLLWAITuSec);
@@ -333,9 +351,9 @@ RetCode_t line( loc_t x1, loc_t y1, loc_t x2, loc_t y2 )
 {
 	unsigned char drawCmd = 0x00;       // Line
 
-    if (x1 == x2 && y1 == y2)
+    if ( x1 == x2 && y1 == y2 )
     {
-        pixel(x1, y1);
+        pixel( x1, y1 );
     }
     else
     {
@@ -383,26 +401,23 @@ RetCode_t rect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, fill_t fillit )
         if( x1 == x2 && y1 == y2 )
         {
             pixel( x1, y1 );
-            printf( "\r\nDraw pixel %d" );
+
         }
         else if( x1 == x2 )
         {
             line( x1, y1, x2, y2 );
-            printf( "\r\nDraw line %d" );
         }
         else if ( y1 == y2 )
         {
             line( x1, y1, x2, y2 );
-            printf( "\r\nDraw line %d" );
+
         }
         else
         {
-			printf( "\r\nDraw other %d" );
-
-            WriteCommand( 0x91, x1 );
-            WriteCommand( 0x93, y1 );
-            WriteCommand( 0x95, x2 );
-            WriteCommand( 0x97, y2 );
+            WriteCommandW( 0x91, x1 );
+            WriteCommandW( 0x93, y1 );
+            WriteCommandW( 0x95, x2 );
+            WriteCommandW( 0x97, y2 );
 
             if ( fillit == FILL ) drawCmd |= 0x20;
 
@@ -440,8 +455,6 @@ dim_t fontwidth( void )
         return ( ( ( DataRead( 0x22 ) >> 2 ) & 0x3 ) + 1 ) * 8;
     else
         return extFontWidth;
-
-
 }
 
 
@@ -496,7 +509,7 @@ _PicturePack * LoadSD_DataDescription( const char * filename, u8 *dst_ptr )
 
 }
 
-RetCode_t SetTextCursor( loc_t x, loc_t y )
+RetCode_t SetTextCursor(     loc_t x, loc_t y )
 {
     // INFO("SetTextCursor(%d, %d)", x, y);
 
@@ -504,8 +517,8 @@ RetCode_t SetTextCursor( loc_t x, loc_t y )
     cursor_x = x;
     cursor_y = y;
 
-    WriteCommand( 0x2A, x );
-    WriteCommand( 0x2C, y );
+    WriteCommandW( 0x2A, x );
+    WriteCommandW( 0x2C, y );
 
     return noerror;
 }
@@ -705,6 +718,8 @@ int _external_putc(int c)
 
 int _internal_putc(int c)
 {
+	u8 state = 0;
+
     if( c )
     {
         unsigned char mwcr0;
@@ -722,7 +737,7 @@ int _internal_putc(int c)
 
             x = DataRead( 0x30 ) | ( DataRead( 0x31 ) << 8 );   // Left edge of active window
 
-            WriteCommand( 0x2A, x );
+            WriteCommandW( 0x2A, x );
         }
         else if( c == '\n' )
         {
@@ -735,7 +750,7 @@ int _internal_putc(int c)
             if ( y >= height( ) )               // @TODO after bottom of active window, then scroll window?
                 y = 0;
 
-            WriteCommand( 0x2C, y );
+            WriteCommandW( 0x2C, y );
         }
         else
         {
@@ -743,7 +758,10 @@ int _internal_putc(int c)
 
             DataWrite( c );
 
-            _WaitWhileBusy( 0x80 );
+            state = _WaitWhileBusy( 0x80 );
+
+			// Delay Problem
+            printf( "\r\n_WaitWhileBusy state : %d", state );
 
         }
     }
@@ -763,6 +781,28 @@ int _putc( int c )
         return _external_putc( c );
     }
 }
+
+void ra_puts( const char * string )
+{
+    if ( font == NULL )
+    {
+        WriteCommand( 0x40,0x80 );    // Put in Text mode if internal font
+    }
+
+    if ( *string != '\0' )
+    {
+        while( *string != '\0' )
+        {
+        	// @TODO calling individual _putc is slower... optimizations?
+            _putc( *string++ );
+
+            // printf( "\r\n*string %s", "A" );
+
+            // printf( "\r\n*string %s", *string );
+        }
+    }
+}
+
 
 
 RetCode_t roundrect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, dim_t radius1, dim_t radius2, color_t color, fill_t fillit )
@@ -796,17 +836,17 @@ RetCode_t roundrect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, dim_t radius1, dim_
     }
     else
     {
-        WriteCommand( 0x91, x1 );
-        WriteCommand( 0x93, y1 );
-        WriteCommand( 0x95, x2 );
-        WriteCommand( 0x97, y2 );
+        WriteCommandW( 0x91, x1 );
+        WriteCommandW( 0x93, y1 );
+        WriteCommandW( 0x95, x2 );
+        WriteCommandW( 0x97, y2 );
 
-        WriteCommand( 0xA1, radius1 );
-        WriteCommand( 0xA3, radius2 );
+        WriteCommandW( 0xA1, radius1 );
+        WriteCommandW( 0xA3, radius2 );
 
         // Should not need this...
-        WriteCommand(0xA5, 0);
-        WriteCommand(0xA7, 0);
+        WriteCommandW(0xA5, 0);
+        WriteCommandW(0xA7, 0);
 
         if (fillit == FILL) drawCmd |= 0x40;
 
@@ -829,6 +869,105 @@ RetCode_t fillroundrect( rect_t r, dim_t radius1, dim_t radius2, color_t color, 
 {
     return roundrect( r.p1.x, r.p1.y, r.p2.x, r.p2.y , radius1, radius2, color, fillit );
 }
+
+RetCode_t SelectDrawingLayer( u16 layer /* , u16 *prevLayer */ )
+{
+	u16 *prevLayer = NULL;
+
+    unsigned char mwcr1 = DataRead( 0x41 ); // retain all but the currently selected layer
+
+    if( prevLayer )
+    	*prevLayer = mwcr1 & 1;
+
+    mwcr1 &= ~0x01; // remove the current layer
+
+    if( screenwidth >= 800 && screenheight >= 480 && screenbpp > 8 )
+    {
+        layer = 0;
+    }
+    else if( layer > 1 )
+    {
+        layer = 0;
+    }
+
+    return WriteCommand( 0x41, mwcr1 | layer );
+
+}
+
+u16 GetDrawingLayer( void )
+{
+    return ( DataRead( 0x41 ) & 0x01 );
+}
+
+RetCode_t locate( textloc_t column, textloc_t row )
+{
+    return SetTextCursor( column * fontwidth(), row * fontheight() );
+}
+
+RetCode_t clsw( Region_t region )
+{
+
+    WriteCommand( 0x8E, ( region == ACTIVEWINDOW ) ? 0xC0 : 0x80 );
+
+    if ( !_WaitWhileReg( 0x8E, 0x80 ) )
+    {
+        return external_abort;
+    }
+
+    return noerror;
+}
+
+RetCode_t cls( uint16_t layers )
+{
+    RetCode_t ret;
+
+    uint16_t prevLayer;
+
+
+    if ( layers == 0 )
+    {
+        ret = clsw( FULLWINDOW );
+    }
+    else if (layers > 3)
+    {
+        ret = bad_parameter;
+    }
+    else
+    {
+        prevLayer = GetDrawingLayer();
+
+        if ( layers & 1 )
+        {
+            SelectDrawingLayer( 0 );
+
+            clsw( FULLWINDOW );
+        }
+
+        if (layers & 2)
+        {
+            SelectDrawingLayer(1);
+
+            clsw(FULLWINDOW);
+        }
+        SelectDrawingLayer(prevLayer);
+    }
+
+    ret = SetTextCursor(0,0);
+    ret = locate(0,0);
+
+    return ret;
+}
+
+bool Intersect( rect_t rect, point_t p )
+{
+    if (p.x >= min(rect.p1.x, rect.p2.x) && p.x <= max(rect.p1.x, rect.p2.x)
+    && p.y >= min(rect.p1.y, rect.p2.y) && p.y <= max(rect.p1.y, rect.p2.y))
+        return TRUE;
+    else
+        return FALSE;
+}
+
+
 
 void LoadFile( const char *filename, u8 *dst_ptr, DWORD file_index, u16 size )
 {
@@ -964,12 +1103,11 @@ _RA8875 * RA8875_CreateObj( void )
 
 	screenwidth = 800;
 	screenheight = 480;
+	portraitmode = FALSE;
 
 	obj->height = height;
 
 	obj->width = width;
-
-
 
 	obj->fillrect = fillrect;
 
@@ -978,6 +1116,8 @@ _RA8875 * RA8875_CreateObj( void )
 	obj->fillroundrect = fillroundrect;
 
 	obj->SetTextCursor = SetTextCursor;
+
+	obj->SetTextCursorControl = SetTextCursorControl;
 
 	obj->SetTextFontSize = SetTextFontSize;
 
@@ -995,7 +1135,17 @@ _RA8875 * RA8875_CreateObj( void )
 
 	obj->fontheight = fontheight;
 
-	obj->_putc = _putc;
+	obj->putc = _putc;
+
+	obj->puts = ra_puts;
+
+	obj->printf = printf;
+
+	obj->TouchPanelCalibrate = TouchPanelCalibrate;
+
+	obj->TouchPanelReadable = TouchPanelReadable;
+
+	obj->Intersect = Intersect;
 
 	return obj;
 }

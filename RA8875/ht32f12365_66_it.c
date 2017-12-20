@@ -28,6 +28,7 @@
 /* Includes ------------------------------------------------------------------------------------------------*/
 #include "ht32_board.h"
 #include "sdio_sd.h"
+#include "TimerManager.h"
 
 /** @addtogroup HT32_Series_Peripheral_Examples HT32 Peripheral Examples
   * @{
@@ -160,8 +161,11 @@ void SDIO_IRQHandler(void)
  ************************************************************************************************************/
 void SysTick_Handler(void)
 {
-  extern u32 uSpeedCount;
-  uSpeedCount++;
+  	extern u32 uSpeedCount;
+
+  	uSpeedCount++;
+
+  	TimingDelay();
 }
 u8 mBuff[256];
 void EXTI13_IRQHandler(void)

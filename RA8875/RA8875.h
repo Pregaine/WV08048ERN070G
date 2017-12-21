@@ -670,6 +670,10 @@ extern dim_t height( void );
 
 extern dim_t width( void );
 
+extern RetCode_t _writeColorTrio( u8 regAddr, color_t color );
+
+extern void ra_puts( const char * string );
+
 extern RetCode_t line( loc_t x1, loc_t y1, loc_t x2, loc_t y2 );
 
 extern RetCode_t foreground( color_t color );

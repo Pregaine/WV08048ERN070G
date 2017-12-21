@@ -54,39 +54,6 @@ dim_t height( void )
         return screenheight;
 }
 
-/// @todo add a timeout and return false, but how long
-/// to wait since some operations can be very long.
-bool _WaitWhileReg( uint8_t reg, uint8_t mask )
-{
-	#if 0
-
-    int i = 20000 / POLLWAITuSec; // 20 msec max
-
-    while ( i-- && ReadCommand( reg ) & mask )
-    {
-        wait_us(POLLWAITuSec);
-
-        COUNTIDLETIME(POLLWAITuSec);
-
-        if (idle_callback)
-        {
-            if ( external_abort == (*idle_callback)(command_wait, 0) )
-            {
-                return false;
-            }
-        }
-    }
-    if( i )
-        return true;
-    else
-        return false;
-
-    #endif
-
-    return FALSE;
-}
-
-
 
 RetCode_t WriteCommand( u8 command, u16 data )
 {
@@ -251,6 +218,44 @@ RetCode_t _EndGraphicsStream( void )
 
 /// @todo add a timeout and return false, but how long
 /// to wait since some operations can be very long.
+bool _WaitWhileReg( uint8_t reg, uint8_t mask )
+{
+	#if 1
+
+    // int i = 20000 / POLLWAITuSec; // 20 msec max
+
+    int i = 20000;
+
+    while ( i-- && DataRead( reg ) & mask )
+    {
+        // wait_us( POLLWAITuSec );
+		wait_ms( 1 );
+
+		/*
+        COUNTIDLETIME(POLLWAITuSec);
+
+        if ( idle_callback )
+        {
+            if ( external_abort == (*idle_callback)( command_wait, 0 ) )
+            {
+                return false;
+            }
+        }
+        */
+
+    }
+
+    if( i )
+        return TRUE;
+    else
+        return FALSE;
+
+    #endif
+}
+
+
+/// @todo add a timeout and return false, but how long
+/// to wait since some operations can be very long.
 bool _WaitWhileBusy( uint8_t mask )
 {
     // int i = 20000/POLLWAITuSec; // 20 msec max
@@ -262,15 +267,16 @@ bool _WaitWhileBusy( uint8_t mask )
 
         __NOP;
 
+		wait_ms( 1 );
         // wait_us(POLLWAITuSec);
 
         // COUNTIDLETIME(POLLWAITuSec);
 
         /*
-
-
-        if (idle_callback) {
-            if (external_abort == (*idle_callback)(status_wait, 0)) {
+        if (idle_callback)
+        {
+            if (external_abort == (*idle_callback)(status_wait, 0))
+            {
                 return false;
             }
         }
@@ -357,10 +363,10 @@ RetCode_t line( loc_t x1, loc_t y1, loc_t x2, loc_t y2 )
     }
     else
     {
-        WriteCommand( 0x91, x1 );
-        WriteCommand( 0x93, y1 );
-        WriteCommand( 0x95, x2 );
-        WriteCommand( 0x97, y2 );
+        WriteCommandW( 0x91, x1 );
+        WriteCommandW( 0x93, y1 );
+        WriteCommandW( 0x95, x2 );
+        WriteCommandW( 0x97, y2 );
 
         WriteCommand( 0x90, drawCmd );
         WriteCommand( 0x90, 0x80 + drawCmd ); // Start drawing.
@@ -1104,6 +1110,8 @@ _RA8875 * RA8875_CreateObj( void )
 	screenwidth = 800;
 	screenheight = 480;
 	portraitmode = FALSE;
+
+	TouchPanelInit( );
 
 	obj->height = height;
 

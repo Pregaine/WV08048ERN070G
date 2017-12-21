@@ -418,11 +418,7 @@ void CalibrateTS(void)
     tpMatrix_t matrix;
     RetCode_t r;
 
-    // r = lcd->TouchPanelCalibrate( "\r\nCalibrate the touch panel", &matrix, 15 );
-
-    lcd->printf( "TouchPanelCalibrate returned error code %d\r\n" );
-
-    lcd->printf( "TouchPanelCalibrate returned error code %d\r\n", r );
+    r = lcd->TouchPanelCalibrate( "\r\nCalibrate the touch panel", &matrix, 1 );
 
     if ( r == noerror )
     {
@@ -443,7 +439,7 @@ void CalibrateTS(void)
     }
     else
     {
-        lcd->printf( "TouchPanelCalibrate returned error code %d\r\n", r );
+        lcd->printf( "\r\nTouchPanelCalibrate returned error code %d", r );
 
        	wait_ms( 2000 );
     }
@@ -454,7 +450,7 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
 {
     keyboard_t tiny;
 
-    char name1[ 10 ];
+    char name1[ 20 ];
 
     kp->SetKeyboard( NULL, KYBD_SYM_ENTER, KYBD_SYM_ESCAPE );
 
@@ -533,22 +529,20 @@ int main( void )
   	SYSTICK_ClockSourceConfig( SYSTICK_SRC_STCLK );       // Default : CK_SYS/8
   	SYSTICK_SetReloadValue( SystemCoreClock / 8 / 1000 ); // (CK_SYS/8/1000) = 1ms on chip
   	SYSTICK_IntConfig( ENABLE );                          // Enable SYSTICK Interrupt
+  	SYSTICK_CounterCmd( SYSTICK_COUNTER_CLEAR );
+	SYSTICK_CounterCmd( SYSTICK_COUNTER_ENABLE );
 
 	// Active_Window( 0, 16, 0, 16 );
-
-	Write_Dir( 0x8E, 0x80 ); 						//Clean
-	Chk_Busy();
-
-	CmdWrite( 0x02 );
-	openBMP3( "bg.dat" );
-
-	Chk_Busy();
-
 	kp = Keypad_CreateObj( Blue, White );
 
 	lcd = RA8875_CreateObj( );
 
 	CalibrateTS( );
+
+	Graphic_Mode();
+	Write_Dir( 0x8E, 0x80 ); 	//Clean
+	CmdWrite( 0x02 );
+	openBMP3( "bg.dat" );
 
 	// FloatingSmallQWERTYTest( 50, 0, 200, 0 );
 	FloatingSmallQWERTYTest( 75, 100, 0, 0 );
@@ -662,20 +656,19 @@ int main( void )
 
 	//Write_Dir(0x8E,0x80);//Clean
 	//CmdWrite(0x02);//MRWC
-	printf( "\r\n=====Start=====\r\n" );
+	printf( "\r\n=====Start=====" );
 
-	//KeyBoard_Int();
-	///*
+	// KeyBoard_Int();
 
 	while ( 1 )
 	{
-		//I2C_EEPROM_BufferWrite(mBuff2,0,32);
+		// I2C_EEPROM_BufferWrite(mBuff2,0,32);
 		HT32F_DVB_LEDToggle( HT_LED1 );
 
 		// I2C_BufferRead( mBuff2,0x68,0,8 );			//0x50
 
-		//I2C_EEPROM_BufferRead(mBuff2,0, 8);
-		//for(i=0;i<8;i++){
+		// I2C_EEPROM_BufferRead(mBuff2,0, 8);
+		// for(i=0;i<8;i++){
 		//		printf("[0x%x],",mBuff2[i]);
 		//}
 		lsd 				= ( mBuff2[2] &0x0f );
@@ -695,7 +688,7 @@ int main( void )
 		tStr2[6]			= msd + '0';
 		tStr2[8]			= '\0';
 
-		//printf("\r\n%s\r\n",tStr2);
+		// printf("\r\n%s\r\n",tStr2);
 
 		/*
 		for(i=0;i<8;i++){
@@ -705,23 +698,20 @@ int main( void )
 				printf("[0x%x],",mBuff2[i]);
 		}
 		*/
-		//tStr2[0] = 0x31;
-		//tStr2[1] = 0x32;
-		//tStr2[2] = 0x33;
+
+		// tStr2[0] = 0x31;
+		// tStr2[1] = 0x32;
+		// tStr2[2] = 0x33;
 		// Chk_Busy();
 
 		// DrawString( 300,200,tStr2,3,3,FALSE,FALSE,White,Red );
 
-		//DrawString(10,300,mBuff2[i],0,0,FALSE,FALSE,Green,Purple);
-		//DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
+		// DrawString(10,300,mBuff2[i],0,0,FALSE,FALSE,Green,Purple);
+		// DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
 		printf( "\r\n=====End=====" );
 
-		///*
-		wait_ms( 200 );
-
-		//*/
+		wait_ms( 2000 );
 	}
-	//*/
 }
 
 

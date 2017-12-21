@@ -4,6 +4,7 @@
 #include "Keypad.h"
 #include "RA8875.h"
 
+
 #define true					1
 #define false					0
 
@@ -434,15 +435,15 @@ void ShowBufferMetrics( void )
 
 	rect_t r = ComputeKeypadRect();
 
-	ra->SetTextCursor( r.p2.x - 1 - ra->fontwidth() * 5,r.p1.y + 2 );
+	ra->SetTextCursor( r.p2.x - 1 - ra->fontwidth() * 5, r.p1.y + 2 );
 
 	ra->printf( "%02d/%02d", pNext - pStart,bufSize ); // "001/100"
 
 	ra->SetTextCursor( ra->width( ) - 1 - ra->fontwidth() * 7, ra->height() - 1 - ra->fontheight( ) );
 
-	ra->SetTextCursor( userText.x,userText.y );
+	ra->SetTextCursor( userText.x, userText.y );
 
-	ra->SetTextCursorControl( UNDER, FALSE );
+	ra->SetTextCursorControl( UNDER, TRUE );
 }
 
 
@@ -476,6 +477,8 @@ bool GetString( char *buffer, unsigned char size, const char *prompt, bool initF
 
 	ShowBufferMetrics( );
 
+	printf( "\r\nShowBufferMetrics( );");
+
 #if 1
 	while ( 1 )
 	{
@@ -486,9 +489,9 @@ bool GetString( char *buffer, unsigned char size, const char *prompt, bool initF
 
 			if ( key )
 			{
-				DrawKey( touchRect, key, TRUE );
+				DrawKey( touchRect, key, FALSE );
 
-				// wait_ms( 50 );
+				wait_ms( 50 );
 
 				do
 				{
@@ -498,7 +501,7 @@ bool GetString( char *buffer, unsigned char size, const char *prompt, bool initF
 				}
 				while( is != no_touch );
 
-				DrawKey( touchRect, key, FALSE );
+				DrawKey( touchRect, key, TRUE );
 			}
 
 			printf( "\r\nTouch %02X at (%d,%d)", key, point.x, point.y );
@@ -572,6 +575,7 @@ bool GetString( char *buffer, unsigned char size, const char *prompt, bool initF
 				userText.x += ra->fontwidth();
 			}
 
+			/*
 			if ( ( pNext - buffer ) >= ( size - 1 ) )
 			{
 				*pNext = '\0';
@@ -582,6 +586,7 @@ bool GetString( char *buffer, unsigned char size, const char *prompt, bool initF
 
 				break;
 			}
+			*/
 
 			ShowBufferMetrics();
 		}

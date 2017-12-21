@@ -11,4 +11,8 @@ extern TouchCode_t TouchPanelA2DFiltered( int * x,int * y );
 
 extern RetCode_t TouchPanelComputeCalibration( point_t *displayPtr, point_t *screenPtr, tpMatrix_t *matrixPtr );
 
+extern RetCode_t TouchPanelInit( void );
+
+extern void _TouchTicker( void );
+
 #endif

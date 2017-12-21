@@ -39,6 +39,7 @@
 #include "common/spi_flash.h"
 #include "common/ebi_lcd.h"
 #include "TimerManager.h"
+#include "RA8875_Touch.h"
 
 /** @addtogroup Utilities
   * @{

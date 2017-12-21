@@ -166,6 +166,12 @@ void SysTick_Handler(void)
   	uSpeedCount++;
 
   	TimingDelay();
+
+  	timeout_increase();
+
+  	touchTimer_increase();
+
+  	_TouchTicker( );
 }
 u8 mBuff[256];
 void EXTI13_IRQHandler(void)

@@ -468,9 +468,9 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
     // now select this tiny keyboard
     kp->SetKeyboard( &tiny, KYBD_SYM_ENTER, KYBD_SYM_ESCAPE );
 
-    kp->SetKeyboardFont( 0, 3 );
+    kp->SetKeyboardFont( 0, 4 );
 
-    if ( kp->GetString( name1, sizeof( name1 ), "Cprs:", FALSE, 0, FALSE ) )
+    if ( kp->GetString( name1, sizeof( name1 ), "", FALSE, 1, FALSE ) )
     {
     	/*
         LCD.foreground(BrightRed);
@@ -533,19 +533,15 @@ int main( void )
 	SYSTICK_CounterCmd( SYSTICK_COUNTER_ENABLE );
 
 	// Active_Window( 0, 16, 0, 16 );
-	kp = Keypad_CreateObj( Blue, White );
+	kp = Keypad_CreateObj( White, Black );
 
 	lcd = RA8875_CreateObj( );
 
 	CalibrateTS( );
 
-	Graphic_Mode();
-	Write_Dir( 0x8E, 0x80 ); 	//Clean
-	CmdWrite( 0x02 );
-	openBMP3( "bg.dat" );
-
-	// FloatingSmallQWERTYTest( 50, 0, 200, 0 );
-	FloatingSmallQWERTYTest( 75, 100, 0, 0 );
+	lcd->foreground( Yellow );
+    lcd->background( Black );
+	lcd->clsw( FULLWINDOW );
 
 	// CalculatorKeypadTest( );
 	// ---------------------------------------
@@ -557,6 +553,13 @@ int main( void )
     // DrawPictureFromSD( "test.dat", SD_ReadBuf, 500, 100 );
 
     // DrawPictureFromSD( "file1.dat", SD_ReadBuf, 200, 100 );
+
+	FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+
+	Graphic_Mode();
+	Write_Dir( 0x8E, 0x80 ); 	//Clean
+	CmdWrite( 0x02 );
+	openBMP3( "bg.dat" );
 
 	/*
 	DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);

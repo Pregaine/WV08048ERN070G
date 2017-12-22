@@ -661,6 +661,44 @@ typedef struct
     ///
     bool ( *Intersect )( rect_t rect, point_t p );
 
+    /// Clear either the specified layer, or the active layer.
+    ///
+    /// The behavior is to clear the whole screen for the specified
+    /// layer. When not specified, the active drawing layer is cleared.
+    /// This command can also be used to specifically clear either,
+    /// or both layers. See @ref clsw().
+    ///
+    /// @code
+    ///     lcd.cls();
+    /// @endcode
+    ///
+    /// @param[in] layers is optional. If not provided, the active layer
+    ///     is cleared. If bit 0 is set, layer 0 is cleared, if bit
+    ///     1 is set, layer 1 is cleared. If both are set, both layers
+    ///     are cleared. Any other value does not cause an action.
+    ///
+    /// @returns success/failure code. See @ref RetCode_t.
+    ///
+    /// RetCode_t cls( uint16_t layers = 0 );
+	RetCode_t ( *cls )( uint16_t layers );
+
+    /// Clear the screen, or clear only the active window.
+    ///
+    /// The default behavior is to clear the whole screen. With the optional
+    /// parameter, the action can be restricted to the active window, which
+    /// can be set with the See @ref window method.
+    ///
+    /// @code
+    ///     lcd.window(20,20, 40,10);
+    ///     lcd.clsw();
+    /// @endcode
+    ///
+    /// @param[in] region is an optional parameter that defaults to FULLWINDOW
+    ///         or may be set to ACTIVEWINDOW.
+    /// @returns success/failure code. See @ref RetCode_t.
+    ///
+    /// RetCode_t clsw(RA8875::Region_t region = FULLWINDOW);
+	RetCode_t ( *clsw )( Region_t region );
 
 }_RA8875;
 

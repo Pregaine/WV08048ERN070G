@@ -1155,6 +1155,10 @@ _RA8875 * RA8875_CreateObj( void )
 
 	obj->Intersect = Intersect;
 
+	obj->cls = cls;
+
+	obj->clsw = clsw;
+
 	return obj;
 }
 

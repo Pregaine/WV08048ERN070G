@@ -38,6 +38,7 @@
 #include "common/i2c_eeprom.h"
 #include "common/spi_flash.h"
 #include "common/ebi_lcd.h"
+#include "common/ebi_sram.h"
 #include "TimerManager.h"
 #include "RA8875_Touch.h"
 
@@ -430,6 +431,92 @@ typedef enum
 /**
   * @}
   */
+
+/* A0 ~ A18 */
+#define HTCFG_EBI_A0_ID               (GPIO_PA)
+#define HTCFG_EBI_A0_PIN              (AFIO_PIN_11)
+#define HTCFG_EBI_A1_ID               (GPIO_PA)
+#define HTCFG_EBI_A1_PIN              (AFIO_PIN_9)
+#define HTCFG_EBI_A2_ID               (GPIO_PD)
+#define HTCFG_EBI_A2_PIN              (AFIO_PIN_7)
+#define HTCFG_EBI_A3_ID               (GPIO_PD)
+#define HTCFG_EBI_A3_PIN              (AFIO_PIN_9)
+#define HTCFG_EBI_A4_ID               (GPIO_PD)
+#define HTCFG_EBI_A4_PIN              (AFIO_PIN_10)
+#define HTCFG_EBI_A5_ID               (GPIO_PD)
+#define HTCFG_EBI_A5_PIN              (AFIO_PIN_11)
+#define HTCFG_EBI_A6_ID               (GPIO_PD)
+#define HTCFG_EBI_A6_PIN              (AFIO_PIN_12)
+#define HTCFG_EBI_A7_ID               (GPIO_PD)
+#define HTCFG_EBI_A7_PIN              (AFIO_PIN_13)
+#define HTCFG_EBI_A8_ID               (GPIO_PD)
+#define HTCFG_EBI_A8_PIN              (AFIO_PIN_14)
+#define HTCFG_EBI_A9_ID               (GPIO_PD)
+#define HTCFG_EBI_A9_PIN              (AFIO_PIN_15)
+#define HTCFG_EBI_A10_ID              (GPIO_PE)
+#define HTCFG_EBI_A10_PIN             (AFIO_PIN_0)
+#define HTCFG_EBI_A11_ID              (GPIO_PE)
+#define HTCFG_EBI_A11_PIN             (AFIO_PIN_1)
+#define HTCFG_EBI_A12_ID              (GPIO_PE)
+#define HTCFG_EBI_A12_PIN             (AFIO_PIN_2)
+#define HTCFG_EBI_A13_ID              (GPIO_PE)
+#define HTCFG_EBI_A13_PIN             (AFIO_PIN_3)
+#define HTCFG_EBI_A14_ID              (GPIO_PE)
+#define HTCFG_EBI_A14_PIN             (AFIO_PIN_4)
+#define HTCFG_EBI_A15_ID              (GPIO_PE)
+#define HTCFG_EBI_A15_PIN             (AFIO_PIN_5)
+#define HTCFG_EBI_A16_ID              (GPIO_PD)
+#define HTCFG_EBI_A16_PIN             (AFIO_PIN_4)
+#define HTCFG_EBI_A17_ID              (GPIO_PD)
+#define HTCFG_EBI_A17_PIN             (AFIO_PIN_5)
+#define HTCFG_EBI_A18_ID              (GPIO_PD)
+#define HTCFG_EBI_A18_PIN             (AFIO_PIN_0)
+
+/* AD0 ~ AD15 */
+#define HTCFG_EBI_AD0_ID              (GPIO_PA)
+#define HTCFG_EBI_AD0_PIN             (AFIO_PIN_14)
+#define HTCFG_EBI_AD1_ID              (GPIO_PA)
+#define HTCFG_EBI_AD1_PIN             (AFIO_PIN_15)
+#define HTCFG_EBI_AD2_ID              (GPIO_PB)
+#define HTCFG_EBI_AD2_PIN             (AFIO_PIN_0)
+#define HTCFG_EBI_AD3_ID              (GPIO_PB)
+#define HTCFG_EBI_AD3_PIN             (AFIO_PIN_1)
+#define HTCFG_EBI_AD4_ID              (GPIO_PB)
+#define HTCFG_EBI_AD4_PIN             (AFIO_PIN_2)
+#define HTCFG_EBI_AD5_ID              (GPIO_PB)
+#define HTCFG_EBI_AD5_PIN             (AFIO_PIN_3)
+#define HTCFG_EBI_AD6_ID              (GPIO_PB)
+#define HTCFG_EBI_AD6_PIN             (AFIO_PIN_4)
+#define HTCFG_EBI_AD7_ID              (GPIO_PB)
+#define HTCFG_EBI_AD7_PIN             (AFIO_PIN_5)
+#define HTCFG_EBI_AD8_ID              (GPIO_PC)
+#define HTCFG_EBI_AD8_PIN             (AFIO_PIN_7)
+#define HTCFG_EBI_AD9_ID              (GPIO_PC)
+#define HTCFG_EBI_AD9_PIN             (AFIO_PIN_8)
+#define HTCFG_EBI_AD10_ID             (GPIO_PC)
+#define HTCFG_EBI_AD10_PIN            (AFIO_PIN_4)
+#define HTCFG_EBI_AD11_ID             (GPIO_PC)
+#define HTCFG_EBI_AD11_PIN            (AFIO_PIN_5)
+#define HTCFG_EBI_AD12_ID             (GPIO_PC)
+#define HTCFG_EBI_AD12_PIN            (AFIO_PIN_6)
+#define HTCFG_EBI_AD13_ID             (GPIO_PC)
+#define HTCFG_EBI_AD13_PIN            (AFIO_PIN_0)
+#define HTCFG_EBI_AD14_ID             (GPIO_PC)
+#define HTCFG_EBI_AD14_PIN            (AFIO_PIN_1)
+#define HTCFG_EBI_AD15_ID             (GPIO_PC)
+#define HTCFG_EBI_AD15_PIN            (AFIO_PIN_2)
+
+/* OE, WE, CS1, BL0, BL1 */
+#define HTCFG_EBI_OE_ID               (GPIO_PB)
+#define HTCFG_EBI_OE_PIN              (AFIO_PIN_6)
+#define HTCFG_EBI_WE_ID               (GPIO_PB)
+#define HTCFG_EBI_WE_PIN              (AFIO_PIN_8)
+#define HTCFG_EBI_CS1_ID              (GPIO_PB)
+#define HTCFG_EBI_CS1_PIN             (AFIO_PIN_10)
+#define HTCFG_EBI_BL0_ID              (GPIO_PE)
+#define HTCFG_EBI_BL0_PIN             (AFIO_PIN_6)
+#define HTCFG_EBI_BL1_ID              (GPIO_PE)
+#define HTCFG_EBI_BL1_PIN             (AFIO_PIN_7)
 
 /* Exported functions --------------------------------------------------------------------------------------*/
 /** @defgroup HT32F12366_DVBTEMP_Exported_Functions HT32F12366 DVB exported functions

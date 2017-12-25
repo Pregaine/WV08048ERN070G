@@ -115,13 +115,18 @@ void EBI_Init(EBI_InitTypeDef* EBI_InitStruct)
   tmp = (3 << (bank * 2)) | (0x00001000 << bank) |
         (0x00010000 << (bank * 2)) | (0x00020000 << (bank * 2)) |
         (0x01000000 << bank);
+
   tmp = HT_EBI->CR & (~tmp);
+
+
   HT_EBI->CR = (EBI_InitStruct->EBI_Mode << (bank * 2)) |
                (EBI_InitStruct->EBI_IdleCycle << bank) |
                (EBI_InitStruct->EBI_AsynchronousReady << (bank * 2)) |
                (EBI_InitStruct->EBI_ARDYTimeOut << (bank * 2)) |
                (EBI_InitStruct->EBI_ByteLane << bank) |
                (EBI_InitStruct->EBI_IdleCycleTime << 28) | tmp;
+
+  // HT_EBI->CR = 0x020A330F;
 
   if (EBI_InitStruct->EBI_PageMode)
   {

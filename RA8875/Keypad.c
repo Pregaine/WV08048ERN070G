@@ -154,15 +154,15 @@ bool SetKeyboardFont( const unsigned char *_font, int _fontscale )
 void DrawKey( rect_t r, char c, bool invert )
 {
 
-	printf( "\r\nvoid DrawKey( rect_t r, char c, bool invert )" );
+	// printf( "\r\nvoid DrawKey( rect_t r, char c, bool invert )" );
 
 	ra->fillroundrect( r, 2, 2, invert ?fore:back, NOFILL );
 
 	ra->roundrect( r, 2, 2, invert ? back: fore, NOFILL );
 
 
-	printf( "\r\ny:%d", r.p1.y + 2 );
-	printf( "\r\nx:%d", r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2 );
+	// printf( "\r\ny:%d", r.p1.y + 2 );
+	// printf( "\r\nx:%d", r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2 );
 
 	ra->SetTextCursor( r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2, r.p1.y + 2 );
 
@@ -254,9 +254,9 @@ rect_t ComputeKeypadRect( void )
 	rect_t r;
 
 
-	printf( "\r\nComputeKeypadRect kbd->x %d", kbd->x  );
+	// printf( "\r\nComputeKeypadRect kbd->x %d", kbd->x  );
 
-	printf( "\r\nComputeKeypadRect kbd->y %d", kbd->y  );
+	// printf( "\r\nComputeKeypadRect kbd->y %d", kbd->y  );
 
 	if ( kbd->x <= 0 )
 	{

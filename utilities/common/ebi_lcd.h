@@ -87,8 +87,10 @@ typedef struct
 /** @defgroup EBI_LCD_Exported_Constants EBI LCD exported constants
   * @{
   */
-#define LCD_Bank_ADDR             0x60000000
-#define EBI_LCD                  ((EBI_LCD_TypeDef *) LCD_Bank_ADDR)
+
+#define LCD_Bank_ADDR	0x60000000
+// #define LCD_Bank_ADDR 	0x6C000000
+#define EBI_LCD         ( ( EBI_LCD_TypeDef *) LCD_Bank_ADDR )
 
 #ifndef LCD_DIRECTION
   #define LCD_DIRECTION   (0)
@@ -331,6 +333,7 @@ void Draw_Line(u16 XS,u16 XE ,u16 YS,u16 YE) ;
 void Write_Dir(u16 Cmd,u16 Data);
 
 
+void LCD_IO_Init( void );
 void LCD_Init(void);
 void LCD_Config(void);
 void LCD_WriteReg(u32 LCD_Reg_Index, u32 LCD_Reg_Value);

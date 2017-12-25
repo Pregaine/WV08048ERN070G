@@ -505,25 +505,23 @@ void CalculatorKeypadTest(void)
 
 int main( void )
 {
-	// int i = 0;
-	u8				tStr[] = "";
-	u8				tStr2[9] = "";
-	u16 			temp;
-	u8				lsd,msd;
-	int 			second;
+	int i = 0;
+	u8	tStr[] = "";
+	u8	tStr2[9] = "";
+	u16 temp;
+	u16 temp_result;
+	u8	lsd,msd;
+	int second;
+	rect_t r;
 
 	RETARGET_Configuration( );						//Retarget Related configuration
 	printf( "\r\n========== Initial ==========" );
 
 	HT32F_DVB_LEDInit( HT_LED1 );
-	LCD_Init( );
-	LCD_Config( );
-	I2C_EEPROM_Init( );
 
 	NVIC_EnableIRQ( SDIO_IRQn );
 	NVIC_EnableIRQ( PDMACH6_IRQn ); 				// SDIO_RX
 	NVIC_EnableIRQ( PDMACH7_IRQn ); 				// SDIO_TX
-	f_mount( 0,&fs );
 
 	/* SYSTICK configuration */
   	SYSTICK_ClockSourceConfig( SYSTICK_SRC_STCLK );       // Default : CK_SYS/8
@@ -531,17 +529,24 @@ int main( void )
   	SYSTICK_IntConfig( ENABLE );                          // Enable SYSTICK Interrupt
   	SYSTICK_CounterCmd( SYSTICK_COUNTER_CLEAR );
 	SYSTICK_CounterCmd( SYSTICK_COUNTER_ENABLE );
+	// ---------------------------------------------
 
-	// Active_Window( 0, 16, 0, 16 );
+	wait_ms( 10 );
+
+    LCD_Init( );
+    LCD_Config( );
+
 	kp = Keypad_CreateObj( White, Black );
-
 	lcd = RA8875_CreateObj( );
 
-	CalibrateTS( );
+	EBI_SRAM_Init( );
 
-	lcd->foreground( Yellow );
-    lcd->background( Black );
-	lcd->clsw( FULLWINDOW );
+	I2C_EEPROM_Init( );
+
+	f_mount( 0,&fs );
+
+	// lcd->foreground( Yellow );
+    // lcd->background( Black );
 
 	// CalculatorKeypadTest( );
 	// ---------------------------------------
@@ -554,12 +559,32 @@ int main( void )
 
     // DrawPictureFromSD( "file1.dat", SD_ReadBuf, 200, 100 );
 
-	FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+	/* Write data to EBI SRAM */
+	EBI_SRAM_IO_Init( );
+    EBI_SRAM_Test( );
 
-	Graphic_Mode();
-	Write_Dir( 0x8E, 0x80 ); 	//Clean
-	CmdWrite( 0x02 );
-	openBMP3( "bg.dat" );
+    printf( "\r\nLCD_Init();" );
+    printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
+
+	LCD_IO_Init( );
+  	Graphic_Mode( );
+	lcd->clsw( FULLWINDOW );
+	r.p1.x = 0;
+	r.p1.y = 0;
+	r.p2.x = 100;
+	r.p2.y = 100;
+	lcd->fillrect( r, Red, FILL );
+
+	// CmdWrite( 0x02 );
+	// openBMP3( "bg.dat" );
+
+
+	// EBI_Cmd( EBI_BANK_1, DISABLE );
+  	// EBI_Cmd( EBI_BANK_0, ENABLE );
+
+  	// LCD_Init( );
+
+	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
 
 	/*
 	DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
@@ -665,6 +690,38 @@ int main( void )
 
 	while ( 1 )
 	{
+        LCD_IO_Init();
+		Graphic_Mode( );
+		lcd->clsw( FULLWINDOW );
+		r.p1.x = 0;
+		r.p1.y = 0;
+		r.p2.x = 100;
+		r.p2.y = 100;
+		lcd->fillrect( r, Red, FILL );
+
+		wait_ms( 2000 );
+
+        EBI_SRAM_IO_Init( );
+        printf( "\r\nEBI_SRAM_Init" );
+        printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
+		EBI_SRAM_Test_1( );
+
+		wait_ms( 2000 );
+
+        LCD_IO_Init();
+        printf( "\r\nLCD_Init;" );
+        printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
+        Graphic_Mode( );
+        Write_Dir( 0x8E, 0x80 ); 	//Clean
+        CmdWrite( 0x02 );
+        openBMP3( "bg.dat" );
+
+        wait_ms( 2000 );
+
+		EBI_SRAM_IO_Init( );
+        EBI_SRAM_Test( );
+
+
 		// I2C_EEPROM_BufferWrite(mBuff2,0,32);
 		HT32F_DVB_LEDToggle( HT_LED1 );
 
@@ -713,7 +770,7 @@ int main( void )
 		// DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
 		printf( "\r\n=====End=====" );
 
-		wait_ms( 2000 );
+		wait_ms( 1000 );
 	}
 }
 
@@ -727,7 +784,7 @@ void openBMP3( const char * filename )
 
 	if ( result == FR_OK )
 	{
-		//printf("[Read File OK]\r\n");
+		// printf("[Read File OK]\r\n");
 	}
 	else
 	{

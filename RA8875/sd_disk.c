@@ -74,7 +74,7 @@ DSTATUS disk_initialize(BYTE drv)
   if (SD_Init(&SDCardInfo) == SD_OK)
   {
     DiskState &= ~STA_NOINIT;
-    printf(" PASS");
+    printf("\r\nPASS");
     printf("\r\n\tCardType : %u", SDCardInfo.CardType);
     printf("\r\n\tCapacity : %u Bytes", SDCardInfo.CardCapacity);
     printf("\r\n\tBlockSize: %u", SDCardInfo.CardBlockSize);

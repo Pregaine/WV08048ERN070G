@@ -388,11 +388,11 @@ RetCode_t rect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, fill_t fillit )
     RetCode_t ret = noerror;
     unsigned char drawCmd = 0x10;   // Rectangle
 
-    printf( "\r\nDraw rect top left %d %d", x1, y1 );
+    // printf( "\r\nDraw rect top left %d %d", x1, y1 );
 
-    printf( "\r\nDraw rect bot right %d %d", x2, y2 );
+    // printf( "\r\nDraw rect bot right %d %d", x2, y2 );
 
-    printf( "\r\nDraw rect fill %d", fillit );
+    // printf( "\r\nDraw rect fill %d", fillit );
 
     // check for bad_parameter
     if( x1 < 0 || x1 >= screenwidth || x2 < 0 || x2 >= screenwidth
@@ -400,7 +400,7 @@ RetCode_t rect( loc_t x1, loc_t y1, loc_t x2, loc_t y2, fill_t fillit )
     {
         ret = bad_parameter;
 
-        printf( "\r\nDraw rect bad_parameter" );
+        // printf( "\r\nDraw rect bad_parameter" );
     }
     else
     {
@@ -455,7 +455,7 @@ RetCode_t fillrect( rect_t r, color_t color, fill_t fillit )
 
 dim_t fontwidth( void )
 {
-	printf( "\r\nfontwidth" );
+	// printf( "\r\nfontwidth" );
 
     if ( font == NULL )
         return ( ( ( DataRead( 0x22 ) >> 2 ) & 0x3 ) + 1 ) * 8;
@@ -590,7 +590,7 @@ RetCode_t SetTextFont( font_t font)
 
 const uint8_t* GetUserFont( void )
 {
-	printf( "\r\nGetUserFont" );
+	// printf( "\r\nGetUserFont" );
 
 	return font;
 }
@@ -617,7 +617,7 @@ RetCode_t SetTextFontSize( HorizontalScale hScale, VerticalScale vScale )
 {
     unsigned char reg = DataRead( 0x22 );
 
-    printf( "\r\nRetCode_t SetTextFontSize( HorizontalScale hScale, VerticalScale vScale )" );
+    // printf( "\r\nRetCode_t SetTextFontSize( HorizontalScale hScale, VerticalScale vScale )" );
 
     if (vScale == -1)
         vScale = hScale;
@@ -630,13 +630,13 @@ RetCode_t SetTextFontSize( HorizontalScale hScale, VerticalScale vScale )
 
         WriteCommand( 0x22, reg );
 
-        printf( "\r\nSetTextFontSize return noerror" );
+        // printf( "\r\nSetTextFontSize return noerror" );
 
         return noerror;
     }
     else
     {
-		printf( "\r\nSetTextFontSize return bad_parameter" );
+		// printf( "\r\nSetTextFontSize return bad_parameter" );
 
         return bad_parameter;
     }
@@ -767,7 +767,7 @@ int _internal_putc(int c)
             state = _WaitWhileBusy( 0x80 );
 
 			// Delay Problem
-            printf( "\r\n_WaitWhileBusy state : %d", state );
+            // printf( "\r\n_WaitWhileBusy state : %d", state );
 
         }
     }
@@ -1058,10 +1058,6 @@ void DrawPictuure( _PicturePack *pic, u16 size  )
 	}while( size );
 
 }
-
-
-
-
 
 
 

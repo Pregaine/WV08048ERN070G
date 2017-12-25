@@ -133,12 +133,7 @@ void LCD_Init( void )
 
 	//Enable AFIO clock
 	//Enable EBI & EBI CS port clock
-	CKCU_PeripClockConfig_TypeDef CKCUClock =
-	{
-		{
-			0
-		}
-	};
+	CKCU_PeripClockConfig_TypeDef CKCUClock = { { 0 } };
 	LCD_EBI_RST_CLK( CKCUClock ) = 1;
 	CKCUClock.Bit.PA	= 1;
 	CKCUClock.Bit.PB	= 1;
@@ -146,7 +141,7 @@ void LCD_Init( void )
 	CKCUClock.Bit.PD	= 1;
 	CKCUClock.Bit.PE	= 1;
 
-#if (								LCD_EBI_BL_ENABLE == 1)
+#if( LCD_EBI_BL_ENABLE == 1 )
 	LCD_EBI_BL_CLK( CKCUClock ) = 1;
 #endif
 
@@ -159,44 +154,21 @@ void LCD_Init( void )
 	CKCU_PeripClockConfig( CKCUClock,ENABLE );
 
 	//Configure EBI pins & LCD RESET pin
+	HT32F_DVB_GPxConfig( LCD_EBI_CS_GPIO_ID, LCD_EBI_CS_AFIO_PIN, LCD_EBI_CS_AFIO_MODE );
+	HT32F_DVB_GPxConfig( LCD_EBI_OE_GPIO_ID, LCD_EBI_OE_AFIO_PIN, LCD_EBI_OE_AFIO_MODE ); // Read Enable
+	HT32F_DVB_GPxConfig( LCD_EBI_WE_GPIO_ID, LCD_EBI_WE_AFIO_PIN, LCD_EBI_WE_AFIO_MODE );
 
-	HT32F_DVB_GPxConfig( LCD_EBI_CS_GPIO_ID,LCD_EBI_CS_AFIO_PIN,LCD_EBI_CS_AFIO_MODE );
-
-	HT32F_DVB_GPxConfig( LCD_EBI_OE_GPIO_ID,LCD_EBI_OE_AFIO_PIN,LCD_EBI_OE_AFIO_MODE ); // Read Enable
-
-	HT32F_DVB_GPxConfig( LCD_EBI_WE_GPIO_ID,LCD_EBI_WE_AFIO_PIN,LCD_EBI_WE_AFIO_MODE );
-
-	// #if (SPIDUALOUT_WITH_EBI_8BIT_MODE == 0)
-	//	HT32F_DVB_GPxConfig(LCD_EBI_RS_GPIO_ID, LCD_EBI_RS_AFIO_PIN, LCD_EBI_RS_AFIO_MODE);
-	// #else
-	//	HT32F_DVB_GPxConfig(LCD_EBI_RS1_GPIO_ID, LCD_EBI_RS1_AFIO_PIN, LCD_EBI_RS1_AFIO_MODE);
-	// #endif
-
-	// AFIO_GPxConfig(GPIO_WAIT, WAIT, AFIO_FUN_GPIO);
-	// GPIO_DirectionConfig(HTCFG_WAIT,WAIT,GPIO_DIR_OUT);
-	// Control
-
-	// AFIO_GPxConfig( GPIO_CS,CS,AFIO_FUN_GPIO );
-	// AFIO_GPxConfig( GPIO_RD,RD,AFIO_FUN_GPIO );
-
-	// AFIO_GPxConfig(GPIO_WR, WR, AFIO_FUN_GPIO);
-
-	AFIO_GPxConfig( GPIO_DC, DC, AFIO_FUN_GPIO );
-
-	// GPIO_DirectionConfig( HTCFG_CS,CS,GPIO_DIR_OUT );
-	// GPIO_DirectionConfig( HTCFG_RD,RD,GPIO_DIR_OUT );
-
-	// GPIO_DirectionConfig( HTCFG_WR,WR,GPIO_DIR_OUT );
+    AFIO_GPxConfig( GPIO_DC, DC, AFIO_FUN_GPIO );
+	AFIO_GPxConfig( GPIO_DIP,DIP,AFIO_FUN_GPIO );
+    AFIO_GPxConfig( GPIO_RST,RST,AFIO_FUN_GPIO );
 
 	GPIO_DirectionConfig( HTCFG_DC, DC, GPIO_DIR_OUT );
-
-	AFIO_GPxConfig( GPIO_DIP,DIP,AFIO_FUN_GPIO );
-	AFIO_GPxConfig( GPIO_RST,RST,AFIO_FUN_GPIO );
 	GPIO_DirectionConfig( HTCFG_DIP,DIP,GPIO_DIR_OUT );
 	GPIO_DirectionConfig( HTCFG_RST,RST,GPIO_DIR_OUT );
 
 	// AFIO_GPxConfig(GPIO_INT, TP_INT, AFIO_FUN_GPIO);
 	// GPIO_DirectionConfig(HTCFG_INT,TP_INT,GPIO_DIR_OUT);
+
 	AFIO_GPxConfig( GPIO_D00,D00,AFIO_FUN_EBI );
 	AFIO_GPxConfig( GPIO_D01,D01,AFIO_FUN_EBI );
 	AFIO_GPxConfig( GPIO_D02,D02,AFIO_FUN_EBI );
@@ -214,32 +186,23 @@ void LCD_Init( void )
 	AFIO_GPxConfig( GPIO_D14,D14,AFIO_FUN_EBI );
 	AFIO_GPxConfig( GPIO_D15,D15,AFIO_FUN_EBI );
 
-	AFIO_GPxConfig( GPIO_DIP,DIP,AFIO_FUN_GPIO );
-	AFIO_GPxConfig( GPIO_RST,RST,AFIO_FUN_GPIO );
-	GPIO_DirectionConfig( HTCFG_DIP,DIP,GPIO_DIR_OUT );
-	GPIO_DirectionConfig( HTCFG_RST,RST,GPIO_DIR_OUT );
-
 	//EBI Configuration
 	EBI_InitStructure.EBI_Bank = EBI_BANK_0;
 
 #if ( LCD_BIT_MODE == LCD_16_BIT_MODE )
-
 	EBI_InitStructure.EBI_Mode = EBI_MODE_D16;
-
 #else
-
 	EBI_InitStructure.EBI_Mode = EBI_MODE_D8A8;
-
 #endif
 
-#if (								EBI_FUN_BYTELAND == 1)
+#if( EBI_FUN_BYTELAND == 1)
 	EBI_InitStructure.EBI_ByteLane = EBI_BYTELANE_DISABLE;
 	EBI_InitStructure.EBI_ByteLanePolarity = EBI_BYTELANEPOLARITY_LOW;
 #endif
 
 	EBI_InitStructure.EBI_IdleCycle = EBI_IDLECYCLE_DISABLE;
 
-#if (								EBI_FUN_ASYNCREADY == 1)
+#if( EBI_FUN_ASYNCREADY == 1)
 	EBI_InitStructure.EBI_AsynchronousReady = EBI_ASYNCHRONOUSREADY_DISABLE;
 	EBI_InitStructure.EBI_ARDYTimeOut = EBI_ARDYTIMEOUT_DISABLE;
 	EBI_InitStructure.EBI_ReadySignalPolarity = EBI_READYSIGNALPOLARITY_LOW;
@@ -254,19 +217,14 @@ void LCD_Init( void )
 	EBI_InitStructure.EBI_AddressSetupTime = 0;
 	EBI_InitStructure.EBI_AddressHoldTime = 0;
 
-#if defined USE_HT32F1654_DVB // reduce speed since pin shared by analog switch
-
-	EBI_InitStructure.EBI_WriteSetupTime = 2;
-	EBI_InitStructure.EBI_WriteStrobeTime = 2;
-	EBI_InitStructure.EBI_WriteHoldTime = 5;
-
-#else
+	// EBI_InitStructure.EBI_WriteSetupTime = 2;
+	// EBI_InitStructure.EBI_WriteStrobeTime = 2;
+	// EBI_InitStructure.EBI_WriteHoldTime = 5;
 
 	EBI_InitStructure.EBI_WriteSetupTime = 3;
 	EBI_InitStructure.EBI_WriteStrobeTime = 3;
 	EBI_InitStructure.EBI_WriteHoldTime = 3;
 
-#endif
 
 	EBI_InitStructure.EBI_ReadSetupTime  = 3;
 	EBI_InitStructure.EBI_ReadStrobeTime = 3;
@@ -280,10 +238,14 @@ void LCD_Init( void )
 
 	EBI_Init( &EBI_InitStructure );
 
-	EBI_Cmd( EBI_BANK_0,ENABLE );
+	EBI_Cmd( EBI_BANK_0, ENABLE );
 }
 
-
+void LCD_IO_Init( void )
+{
+	AFIO_GPxConfig( GPIO_DC, DC, AFIO_FUN_GPIO );
+	GPIO_DirectionConfig( HTCFG_DC, DC, GPIO_DIR_OUT );
+}
 
 
 

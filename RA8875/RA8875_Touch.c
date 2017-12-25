@@ -594,7 +594,7 @@ TouchCode_t TouchPanelA2DFiltered( int * x, int * y )
         // reg INTC2: Clear that TP interrupt flag
 		WriteCommand( INTC2, RA8875_INT_TP );
 
-		printf( "\r\ntouchState %d", touchState );
+		// printf( "\r\ntouchState %d", touchState );
 
 	} // End of initial if -- data has been read and processed
 	else
@@ -606,7 +606,7 @@ TouchCode_t TouchPanelA2DFiltered( int * x, int * y )
 
 			ret = touchState = held;
 
-			printf( "\r\nret = touchState = held;" );
+			// printf( "\r\nret = touchState = held;" );
 		}
 		else if ( touchState == release )
 		{
@@ -617,7 +617,7 @@ TouchCode_t TouchPanelA2DFiltered( int * x, int * y )
 
 			touchState = no_touch;
 
-			printf( "\r\ntouchState = no_touch;" );
+			// printf( "\r\ntouchState = no_touch;" );
 		}
 	}
 
@@ -697,68 +697,39 @@ RetCode_t TouchPanelCalibrate( const char *msg, tpMatrix_t *matrix, int maxwait_
 		foreground( White );
 		line( pTest[i].x, pTest[i].y - 10, pTest[i].x, pTest[i].y + 10 /* White */ );
 
-		// continue;
 
-		#if 1
-		while ( !TouchPanelA2DFiltered( &x, &y ) ) /*&& ( timeout_read( ) < maxwait_s )*/  /* && timeout.read() < maxwait_s */
+		while ( !TouchPanelA2DFiltered( &x, &y ) )
 		{
 			wait_ms( 20 );
 
-			/*
-			if ( idle_callback )
-			{
-				if ( external_abort == ( *idle_callback ) ( touchcal_wait, 0 ) )
-				{
-					return external_abort;
-				}
-			}
-			*/
 		}
-		#endif
 
-		printf( "\r\n!TouchPanelA2DFiltered" );
-		ra_puts( "!TouchPanelA2DFiltered" );
+		// printf( "\r\n!TouchPanelA2DFiltered" );
 
 		wait_ms( 100 );
 
 		pSample[ i ].x = x;
 		pSample[ i ].y = y;
 
-		foreground( Yellow );
+		foreground( Black );
 		line( pTest[i].x - 10, pTest[i].y, pTest[i].x + 10, pTest[i].y /* Black */ );
 
-		foreground( Yellow );
+		foreground( Black );
 		line( pTest[i].x, pTest[i].y - 10, pTest[i].x, pTest[i].y + 10 /* Black */ );
 
 		foreground( Blue );
 		printf( "\r\n( %4d, %4d )", x, y );
 
-
-		#if 1
-		while( TouchPanelA2DFiltered( &x, &y ) ) /* && ( timeout_read( ) < maxwait_s )*/ /* && timeout.read() < maxwait_s */
+		while( TouchPanelA2DFiltered( &x, &y ) )
 		{
 			wait_ms( 20 );
-
-			/*
-			if ( idle_callback )
-			{
-				if ( external_abort == ( *idle_callback ) ( touchcal_wait, 0 ) )
-				{
-					return external_abort;
-				}
-			}
-			*/
-
 		}
-		#endif
 
-		printf( "\r\nTouchPanelA2DFiltered" );
-
-		wait_ms( 1000 );
+		// printf( "\r\nTouchPanelA2DFiltered" );
 
 	}
 
-	if ( timeout_read( ) >= maxwait_s /* timeout.read() >= maxwait_s */  )
+	if ( timeout_read( ) >= maxwait_s )
 	{
 		printf( "\r\ntouch_cal_timeout;" );
 		return touch_cal_timeout;

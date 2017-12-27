@@ -156,13 +156,9 @@ void DrawKey( rect_t r, char c, bool invert )
 
 	// printf( "\r\nvoid DrawKey( rect_t r, char c, bool invert )" );
 
-	ra->fillroundrect( r, 2, 2, invert ?fore:back, NOFILL );
+	ra->fillroundrect( r, 2, 2, invert ?fore :back, NOFILL );
 
-	ra->roundrect( r, 2, 2, invert ? back: fore, NOFILL );
-
-
-	// printf( "\r\ny:%d", r.p1.y + 2 );
-	// printf( "\r\nx:%d", r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2 );
+	ra->roundrect( r, 2, 2, invert ?back :fore, NOFILL );
 
 	ra->SetTextCursor( r.p1.x + ( r.p2.x - r.p1.x ) / 2 - ra->fontwidth() / 2, r.p1.y + 2 );
 
@@ -170,9 +166,9 @@ void DrawKey( rect_t r, char c, bool invert )
 	{
 		ra->foreground( back );
 		ra->background( fore );
-
-		ra->SetTextCursorControl( NOCURSOR, FALSE );
 	}
+
+	ra->SetTextCursorControl( NOCURSOR, FALSE );
 
 	ra->putc( c );
 
@@ -181,6 +177,7 @@ void DrawKey( rect_t r, char c, bool invert )
 		ra->foreground( fore );
 		ra->background( back );
 	}
+
 
 }
 
@@ -231,7 +228,7 @@ void DrawInputPanel( const char * prompt )
 
 	r = ComputeKeypadRect();
 
-	ra->fillrect( r, back, NOFILL );
+	ra->fillrect( r, back, FILL );
 
 	ra->foreground( fore );
 	ra->background( back );
@@ -320,7 +317,7 @@ void DrawKeypad( void )
 	dim_t kH;										// key Height
 
     const char *p = kbd->keydef1;
-    rect_t ref, r;
+    rect_t ref, r, tmp;
     const char *symbol;
 
 	// fW = ra.fontwidth();
@@ -360,6 +357,23 @@ void DrawKeypad( void )
 				r.p2.y = r.p1.y + kH;
 
 				DrawKey( r, *symbol, TRUE );
+
+				/*
+				tmp = r;
+
+				tmp.p1.x + 1;
+				tmp.p1.y + 1;
+
+				tmp.p2.x -= 1;
+				tmp.p2.y -= 1;
+
+				Graphic_Mode( );
+
+				tmp = r;
+
+				ra->rect( tmp, Red, FILL );
+				*/
+
 			}
 
 			r.p1.x += ( kW * *p ) / 10;

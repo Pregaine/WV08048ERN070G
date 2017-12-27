@@ -470,7 +470,7 @@ void FloatingSmallQWERTYTest( loc_t x, loc_t y, dim_t w, dim_t h )
 
     kp->SetKeyboardFont( 0, 4 );
 
-    if ( kp->GetString( name1, sizeof( name1 ), "", FALSE, 1, FALSE ) )
+    if ( kp->GetString( name1, sizeof( name1 ), "", FALSE, 0, FALSE ) )
     {
     	/*
         LCD.foreground(BrightRed);
@@ -536,7 +536,7 @@ int main( void )
     LCD_Init( );
     LCD_Config( );
 
-	kp = Keypad_CreateObj( White, Black );
+	kp = Keypad_CreateObj( Black, Gray );
 	lcd = RA8875_CreateObj( );
 
 	EBI_SRAM_Init( );
@@ -567,24 +567,18 @@ int main( void )
     printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
 
 	LCD_IO_Init( );
-  	Graphic_Mode( );
+
+	// CalibrateTS();
+
+	Graphic_Mode( );
 	lcd->clsw( FULLWINDOW );
 	r.p1.x = 0;
 	r.p1.y = 0;
-	r.p2.x = 100;
-	r.p2.y = 100;
-	lcd->fillrect( r, Red, FILL );
+	r.p2.x = 800;
+	r.p2.y = 480;
+	lcd->fillrect( r, Gray, FILL );
 
-	// CmdWrite( 0x02 );
-	// openBMP3( "bg.dat" );
-
-
-	// EBI_Cmd( EBI_BANK_1, DISABLE );
-  	// EBI_Cmd( EBI_BANK_0, ENABLE );
-
-  	// LCD_Init( );
-
-	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+	FloatingSmallQWERTYTest( 30, 50, 725, 0 );
 
 	/*
 	DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);

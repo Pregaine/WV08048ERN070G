@@ -61,7 +61,7 @@
 //      <7=> UART1
 */
 #define _RETARGET            1
-#define RETARGET_PORT        2
+#define RETARGET_PORT        RETARGET_COM1
 
 #if (_RETARGET == 1)
 #if (RETARGET_PORT == RETARGET_ITM)

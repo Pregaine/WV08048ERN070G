@@ -159,12 +159,12 @@ void LCD_Init( void )
 	HT32F_DVB_GPxConfig( LCD_EBI_WE_GPIO_ID, LCD_EBI_WE_AFIO_PIN, LCD_EBI_WE_AFIO_MODE );
 
     AFIO_GPxConfig( GPIO_DC, DC, AFIO_FUN_GPIO );
-	AFIO_GPxConfig( GPIO_DIP,DIP,AFIO_FUN_GPIO );
-    AFIO_GPxConfig( GPIO_RST,RST,AFIO_FUN_GPIO );
+	// AFIO_GPxConfig( GPIO_DIP, DIP,AFIO_FUN_GPIO );
+    AFIO_GPxConfig( GPIO_RST, RST, AFIO_FUN_GPIO );
 
 	GPIO_DirectionConfig( HTCFG_DC, DC, GPIO_DIR_OUT );
-	GPIO_DirectionConfig( HTCFG_DIP,DIP,GPIO_DIR_OUT );
-	GPIO_DirectionConfig( HTCFG_RST,RST,GPIO_DIR_OUT );
+	// GPIO_DirectionConfig( HTCFG_DIP, DIP,GPIO_DIR_OUT );
+	GPIO_DirectionConfig( HTCFG_RST, RST, GPIO_DIR_OUT );
 
 	// AFIO_GPxConfig(GPIO_INT, TP_INT, AFIO_FUN_GPIO);
 	// GPIO_DirectionConfig(HTCFG_INT,TP_INT,GPIO_DIR_OUT);
@@ -271,7 +271,7 @@ void LCD_Config( void )
 	PWM1_clock_ratio( 0x0A );
 	PWM1_duty_cycle( 0xFF );
 
-	GPIO_WriteOutBits( HTCFG_DIP,DIP,SET );
+	// GPIO_WriteOutBits( HTCFG_DIP,DIP,SET );
 
 }
 

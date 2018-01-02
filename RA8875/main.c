@@ -8,6 +8,7 @@
 #include "Keypad.h"
 #include "DisplayDefs.h"
 #include "TimerManager.h"
+#include "common/MX25L512.h"
 
 #if 0
 u8 rabit[1500] =
@@ -414,7 +415,7 @@ _RA8875 *lcd;
 
 void CalibrateTS(void)
 {
-    FIL *fh;
+    // FIL *fh;
     tpMatrix_t matrix;
     RetCode_t r;
 
@@ -505,13 +506,13 @@ void CalculatorKeypadTest(void)
 
 int main( void )
 {
-	int i = 0;
-	u8	tStr[] = "";
-	u8	tStr2[9] = "";
-	u16 temp;
-	u16 temp_result;
+	// int i = 0;
+	// u8	tStr[ ] = "";
+	// u8	tStr2[ 9 ] = "";
+	// u16 temp;
+	// u16 temp_result;
 	u8	lsd,msd;
-	int second;
+	// int second;
 	rect_t r;
 
 	RETARGET_Configuration( );						//Retarget Related configuration
@@ -520,8 +521,8 @@ int main( void )
 	HT32F_DVB_LEDInit( HT_LED1 );
 
 	NVIC_EnableIRQ( SDIO_IRQn );
-	NVIC_EnableIRQ( PDMACH6_IRQn ); 				// SDIO_RX
-	NVIC_EnableIRQ( PDMACH7_IRQn ); 				// SDIO_TX
+	NVIC_EnableIRQ( PDMACH6_IRQn ); 					  // SDIO_RX
+	NVIC_EnableIRQ( PDMACH7_IRQn ); 					  // SDIO_TX
 
 	/* SYSTICK configuration */
   	SYSTICK_ClockSourceConfig( SYSTICK_SRC_STCLK );       // Default : CK_SYS/8
@@ -531,19 +532,46 @@ int main( void )
 	SYSTICK_CounterCmd( SYSTICK_COUNTER_ENABLE );
 	// ---------------------------------------------
 
-	wait_ms( 10 );
+    #if 0
+	AFIO_GPxConfig( GPIO_PC, AFIO_PIN_12, AFIO_FUN_GPIO );
+	GPIO_DirectionConfig( HT_GPIOC, AFIO_PIN_12, GPIO_DIR_OUT );
+
+	while( 1 )
+	{
+		wait_ms( 1000 );
+
+		GPIO_WriteOutBits( HT_GPIOC, AFIO_PIN_12,SET );
+
+		// HT32F_DVB_LEDToggle( HT_LED1 );
+
+		wait_ms( 1000 );
+
+		GPIO_WriteOutBits( HT_GPIOC, AFIO_PIN_12,0 );
+	}
+    #endif
+
+	wait_ms( 500 );
 
     LCD_Init( );
     LCD_Config( );
 
+    EBI_SRAM_Init( );
+    EBI_SRAM_Test( );
+   	EBI_SRAM_Test_1( );
+
 	kp = Keypad_CreateObj( Black, Gray );
 	lcd = RA8875_CreateObj( );
 
-	EBI_SRAM_Init( );
+	// I2C_EEPROM_Init( );
 
-	I2C_EEPROM_Init( );
+	/* Initialize the SPI_FLASH driver */
+  	result = SPI_FLASH_Init();
 
-	f_mount( 0,&fs );
+  	printf( "\r\n%d = SPI_FLASH_Init( )", result );
+
+  	MX25L512_Test( );
+
+	f_mount( 0, &fs );
 
 	// lcd->foreground( Yellow );
     // lcd->background( Black );
@@ -559,17 +587,12 @@ int main( void )
 
     // DrawPictureFromSD( "file1.dat", SD_ReadBuf, 200, 100 );
 
-	/* Write data to EBI SRAM */
-	EBI_SRAM_IO_Init( );
-    EBI_SRAM_Test( );
-
-    printf( "\r\nLCD_Init();" );
-    printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
-
-	LCD_IO_Init( );
+    // printf( "\r\nLCD_Init();" );
+    // printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
 
 	// CalibrateTS();
 
+	/*
 	Graphic_Mode( );
 	lcd->clsw( FULLWINDOW );
 	r.p1.x = 0;
@@ -577,8 +600,19 @@ int main( void )
 	r.p2.x = 800;
 	r.p2.y = 480;
 	lcd->fillrect( r, Gray, FILL );
+	*/
 
-	FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+
+	// printf( "\r\nLCD_Init;" );
+	// printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
+
+	Graphic_Mode( );
+	Write_Dir( 0x8E, 0x80 ); 	//Clean
+	CmdWrite( 0x02 );
+	openBMP3( "bg.dat" );
+
+	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
 
 	/*
 	DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
@@ -657,7 +691,8 @@ int main( void )
 		BTE_enable();
 		CmdWrite(0x02);//MRWC
 
-	for(i=0;i<1024;i++){
+	for(i=0;i<1024;i++)
+	{
 		temp = bw[i*2];
 		temp<<=8;
 		temp&=0xff00;
@@ -666,25 +701,28 @@ int main( void )
 		Chk_Busy();
 	}
 	*/
-	//Write_Dir(0x10,0x0F);//16Bit
-	//while(1){
-	//Scroll(10,80,10,80);
-	//}
+
+	// Write_Dir(0x10,0x0F);//16Bit
+	// while(1){
+	// Scroll(10,80,10,80);
+	// }
 
 	/*
+
 	CmdWrite(0x02);
 	Chk_Busy();
-	 */
 
-	//Write_Dir(0x8E,0x80);//Clean
-	//CmdWrite(0x02);//MRWC
+	*/
+
+	// Write_Dir(0x8E,0x80);	// Clean
+	// CmdWrite(0x02);			// MRWC
+
 	printf( "\r\n=====Start=====" );
 
-	// KeyBoard_Int();
+	// KeyBoard_Int( );
 
 	while ( 1 )
 	{
-        LCD_IO_Init();
 		Graphic_Mode( );
 		lcd->clsw( FULLWINDOW );
 		r.p1.x = 0;
@@ -693,28 +731,20 @@ int main( void )
 		r.p2.y = 100;
 		lcd->fillrect( r, Red, FILL );
 
-		wait_ms( 2000 );
+		wait_ms( 1000 );
 
-        EBI_SRAM_IO_Init( );
-        printf( "\r\nEBI_SRAM_Init" );
-        printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
 		EBI_SRAM_Test_1( );
 
-		wait_ms( 2000 );
+		wait_ms( 1000 );
 
-        LCD_IO_Init();
-        printf( "\r\nLCD_Init;" );
-        printf( "\r\nHT_EBI->CR 0x%x", HT_EBI->CR );
         Graphic_Mode( );
         Write_Dir( 0x8E, 0x80 ); 	//Clean
         CmdWrite( 0x02 );
         openBMP3( "bg.dat" );
 
-        wait_ms( 2000 );
+        wait_ms( 1000 );
 
-		EBI_SRAM_IO_Init( );
         EBI_SRAM_Test( );
-
 
 		// I2C_EEPROM_BufferWrite(mBuff2,0,32);
 		HT32F_DVB_LEDToggle( HT_LED1 );
@@ -727,6 +757,8 @@ int main( void )
 		//}
 		lsd 				= ( mBuff2[2] &0x0f );
 		msd 				= ( mBuff2[2] &0x70 ) >> 4;
+
+        #if 0
 		tStr2[1]			= lsd + '0';
 		tStr2[0]			= msd + '0';
 
@@ -741,6 +773,7 @@ int main( void )
 		tStr2[7]			= lsd + '0';
 		tStr2[6]			= msd + '0';
 		tStr2[8]			= '\0';
+        #endif
 
 		// printf("\r\n%s\r\n",tStr2);
 
@@ -782,7 +815,7 @@ void openBMP3( const char * filename )
 	}
 	else
 	{
-		printf( "[Read File Failed]\r\n" );
+		printf( "\r\nSD Card Read File Failed" );
 	}
 
 	for ( t = 0; t < 15; t++ )

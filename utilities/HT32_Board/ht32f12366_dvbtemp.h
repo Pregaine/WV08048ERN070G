@@ -156,6 +156,8 @@ typedef enum
 #define COM1_PORT                   (HT_USART0)
 #define COM1_IRQn                   (USART0_IRQn)
 
+/*
+
 #define COM1_TX_GPIO_ID             (GPIO_PA)
 #define COM1_TX_AFIO_PIN            (AFIO_PIN_2)
 #define COM1_TX_AFIO_MODE           (AFIO_FUN_USART_UART)
@@ -163,17 +165,26 @@ typedef enum
 #define COM1_RX_GPIO_ID             (GPIO_PA)
 #define COM1_RX_AFIO_PIN            (AFIO_PIN_3)
 #define COM1_RX_AFIO_MODE           (AFIO_FUN_USART_UART)
+*/
+
+#define COM1_TX_GPIO_ID             (GPIO_PA)
+#define COM1_TX_AFIO_PIN            (AFIO_PIN_8)
+#define COM1_TX_AFIO_MODE           (AFIO_FUN_USART_UART)
+
+#define COM1_RX_GPIO_ID             (GPIO_PA)
+#define COM1_RX_AFIO_PIN            (AFIO_PIN_10)
+#define COM1_RX_AFIO_MODE           (AFIO_FUN_USART_UART)
 
 
 #define COM2_CLK(CK)                (CK.Bit.UART0)
 #define COM2_PORT                   (HT_UART0)
 #define COM2_IRQn                   (UART0_IRQn)
 
-#define COM2_TX_GPIO_ID             (GPIO_PC)
-#define COM2_TX_AFIO_PIN            (AFIO_PIN_9)
+#define COM2_TX_GPIO_ID             (GPIO_PA)
+#define COM2_TX_AFIO_PIN            (AFIO_PIN_8)
 #define COM2_TX_AFIO_MODE           (AFIO_FUN_USART_UART)
 
-#define COM2_RX_GPIO_ID             (GPIO_PC)
+#define COM2_RX_GPIO_ID             (GPIO_PA)
 #define COM2_RX_AFIO_PIN            (AFIO_PIN_10)
 #define COM2_RX_AFIO_MODE           (AFIO_FUN_USART_UART)
 
@@ -189,6 +200,8 @@ typedef enum
 /** @addtogroup HT32F12366_DVBTEMP_SPI_FLASH
   * @{
   */
+
+#if 0
 #define FLASH_SPI_CLK(CK)           (CK.Bit.SPI0)
 #define FLASH_SPI                   (HT_SPI0)
 
@@ -208,6 +221,29 @@ typedef enum
 #define FLASH_SPI_SEL_GPIO_PIN      (GPIO_PIN_7)
 #define FLASH_SPI_SEL_AFIO_MODE     (AFIO_MODE_DEFAULT)
 #define FLASH_SPI_SEL_CLK(CK)       (CK.Bit.PE)
+#endif
+
+#define FLASH_SPI_CLK(CK)           ( CK.Bit.SPI1 )
+#define FLASH_SPI                   ( HT_SPI1 )
+
+#define FLASH_SPI_SCK_GPIO_ID       ( GPIO_PE )
+#define FLASH_SPI_SCK_AFIO_PIN      ( AFIO_PIN_9 )
+#define FLASH_SPI_SCK_AFIO_MODE     ( AFIO_FUN_SPI )
+
+#define FLASH_SPI_MOSI_GPIO_ID      ( GPIO_PE )
+#define FLASH_SPI_MOSI_AFIO_PIN     ( AFIO_PIN_10 )
+#define FLASH_SPI_MOSI_AFIO_MODE    ( AFIO_FUN_SPI )
+
+#define FLASH_SPI_MISO_GPIO_ID      ( GPIO_PE )
+#define FLASH_SPI_MISO_AFIO_PIN     ( AFIO_PIN_11 )
+#define FLASH_SPI_MISO_AFIO_MODE    ( AFIO_FUN_SPI )
+
+#define FLASH_SPI_SEL_GPIO_ID       ( GPIO_PA )
+#define FLASH_SPI_SEL_GPIO_PIN      ( GPIO_PIN_7 )
+#define FLASH_SPI_SEL_AFIO_MODE     ( AFIO_MODE_DEFAULT )
+#define FLASH_SPI_SEL_CLK(CK)       ( CK.Bit.PE )
+
+
 /**
   * @}
   */
@@ -267,21 +303,21 @@ typedef enum
 #define LCD_EBI_WE_AFIO_PIN         (AFIO_PIN_8)
 #define LCD_EBI_WE_AFIO_MODE        (AFIO_FUN_EBI)
 
-#define HTCFG_DC      (HT_GPIOA)//(HT_GPIOA)
+#define HTCFG_DC      (HT_GPIOD)//(HT_GPIOA)
 #define HTCFG_WR      (HT_GPIOB)
 #define HTCFG_RD      (HT_GPIOB)//(HT_GPIOB)
 #define HTCFG_CS      (HT_GPIOB)//(HT_GPIOD)
 #define HTCFG_DIP     (HT_GPIOA)//(HT_GPIOD)
-#define HTCFG_RST     (HT_GPIOB)//(HT_GPIOB)
+#define HTCFG_RST     (HT_GPIOC)//(HT_GPIOB)
 
-#define GPIO_DC       (GPIO_PA)//(GPIO_PA)
+#define GPIO_DC       (GPIO_PD)//(GPIO_PA)
 #define GPIO_WR       (GPIO_PB)
 #define GPIO_RD       (GPIO_PB)//(GPIO_PB)
 #define GPIO_CS       (GPIO_PB)//(GPIO_PD)
 #define GPIO_DIP      (GPIO_PA)//(GPIO_PD)
-#define GPIO_RST      (GPIO_PB)//(GPIO_PB)
+#define GPIO_RST      (GPIO_PC)//(GPIO_PB)
 
-#define DC            (AFIO_PIN_11)	// (AFIO_PIN_11)
+#define DC            (AFIO_PIN_6)	// (AFIO_PIN_11)
 #define WR            (AFIO_PIN_8)
 #define RD            (AFIO_PIN_6)	// (AFIO_PIN_6)
 #define CS            (AFIO_PIN_7)	// (AFIO_PIN_14)
@@ -390,6 +426,7 @@ typedef enum
   */
 #define SDCARD_SDIO                 (HT_SDIO)
 
+#if 0
 #define SDCARD_SD_CD_GPIO_ID        (GPIO_PD)//(GPIO_PA)
 #define SDCARD_SD_CD_GPIO_PIN       (GPIO_PIN_6)//(GPIO_PIN_0)
 #define SDCARD_SD_CD_AFIO_MODE      (AFIO_FUN_DEFAULT)
@@ -424,6 +461,43 @@ typedef enum
 #define SDCARD_SD_DAT3_AFIO_PIN     (AFIO_PIN_12)
 #define SDCARD_SD_DAT3_AFIO_MODE    (AFIO_FUN_SDIO)
 #define SDCARD_SD_DAT3_GPIO_CLK(CK) (CK.Bit.PC)
+#endif
+
+#define SDCARD_SD_CD_GPIO_ID        (GPIO_PE)
+#define SDCARD_SD_CD_GPIO_PIN       (GPIO_PIN_13)
+#define SDCARD_SD_CD_AFIO_MODE      (AFIO_FUN_DEFAULT)
+#define SDCARD_SD_CD_GPIO_CLK(CK)   (CK.Bit.PE)
+
+#define SDCARD_SD_CLK_GPIO_ID       (GPIO_PA)
+#define SDCARD_SD_CLK_AFIO_PIN      (AFIO_PIN_5)
+#define SDCARD_SD_CLK_AFIO_MODE     (AFIO_FUN_SDIO)
+#define SDCARD_SD_CLK_GPIO_CLK(CK)  (CK.Bit.PA)
+
+#define SDCARD_SD_CMD_GPIO_ID       (GPIO_PA)
+#define SDCARD_SD_CMD_AFIO_PIN      (AFIO_PIN_4)
+#define SDCARD_SD_CMD_AFIO_MODE     (AFIO_FUN_SDIO)
+#define SDCARD_SD_CMD_GPIO_CLK(CK)  (CK.Bit.PA)
+
+#define SDCARD_SD_DAT0_GPIO_ID      (GPIO_PA)
+#define SDCARD_SD_DAT0_AFIO_PIN     (AFIO_PIN_6)
+#define SDCARD_SD_DAT0_AFIO_MODE    (AFIO_FUN_SDIO)
+#define SDCARD_SD_DAT0_GPIO_CLK(CK) (CK.Bit.PA)
+
+#define SDCARD_SD_DAT1_GPIO_ID      (GPIO_PA)
+#define SDCARD_SD_DAT1_AFIO_PIN     (AFIO_PIN_1)
+#define SDCARD_SD_DAT1_AFIO_MODE    (AFIO_FUN_SDIO)
+#define SDCARD_SD_DAT1_GPIO_CLK(CK) (CK.Bit.PA)
+
+#define SDCARD_SD_DAT2_GPIO_ID      (GPIO_PA)
+#define SDCARD_SD_DAT2_AFIO_PIN     (AFIO_PIN_2)
+#define SDCARD_SD_DAT2_AFIO_MODE    (AFIO_FUN_SDIO)
+#define SDCARD_SD_DAT2_GPIO_CLK(CK) (CK.Bit.PA)
+
+#define SDCARD_SD_DAT3_GPIO_ID      (GPIO_PA)
+#define SDCARD_SD_DAT3_AFIO_PIN     (AFIO_PIN_3)
+#define SDCARD_SD_DAT3_AFIO_MODE    (AFIO_FUN_SDIO)
+#define SDCARD_SD_DAT3_GPIO_CLK(CK) (CK.Bit.PA)
+
 /**
   * @}
   */
@@ -433,8 +507,16 @@ typedef enum
   */
 
 /* A0 ~ A18 */
+
+
+#define HTCFG_EBI_A0_ID               (GPIO_PD)
+#define HTCFG_EBI_A0_PIN              (AFIO_PIN_8)
+
+/*
 #define HTCFG_EBI_A0_ID               (GPIO_PA)
 #define HTCFG_EBI_A0_PIN              (AFIO_PIN_11)
+*/
+
 #define HTCFG_EBI_A1_ID               (GPIO_PA)
 #define HTCFG_EBI_A1_PIN              (AFIO_PIN_9)
 #define HTCFG_EBI_A2_ID               (GPIO_PD)

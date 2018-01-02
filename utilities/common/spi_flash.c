@@ -55,43 +55,52 @@
   ***********************************************************************************************************/
 u32 SPI_FLASH_Init(void)
 {
-  SPI_InitTypeDef  SPI_InitStructure;
+	SPI_InitTypeDef  SPI_InitStructure;
 
-  /*  Enable AFIO & SPI SEL pin port & SPI clock                                                            */
-  CKCU_PeripClockConfig_TypeDef CKCUClock = {{0}};
-  FLASH_SPI_SEL_CLK(CKCUClock) = 1;
-  FLASH_SPI_CLK(CKCUClock)     = 1;
-  CKCUClock.Bit.AFIO           = 1;
-  CKCU_PeripClockConfig(CKCUClock, ENABLE);
+	/*  Enable AFIO & SPI SEL pin port & SPI clock                                                            */
+	CKCU_PeripClockConfig_TypeDef CKCUClock = {{0}};
+	FLASH_SPI_SEL_CLK(CKCUClock) = 1;
+	FLASH_SPI_CLK(CKCUClock)     = 1;
+	CKCUClock.Bit.AFIO           = 1;
+	CKCU_PeripClockConfig(CKCUClock, ENABLE);
 
-  /*  Configure SPI SEL pin                                                                                 */
-  GPIO_SetOutBits(GPIO_PORT[FLASH_SPI_SEL_GPIO_ID], FLASH_SPI_SEL_GPIO_PIN);
-  GPIO_DirectionConfig(GPIO_PORT[FLASH_SPI_SEL_GPIO_ID], FLASH_SPI_SEL_GPIO_PIN, GPIO_DIR_OUT);
+	/*  Configure SPI SEL pin                                                                                 */
+	GPIO_SetOutBits(GPIO_PORT[FLASH_SPI_SEL_GPIO_ID], FLASH_SPI_SEL_GPIO_PIN);
+	GPIO_DirectionConfig(GPIO_PORT[FLASH_SPI_SEL_GPIO_ID], FLASH_SPI_SEL_GPIO_PIN, GPIO_DIR_OUT);
 
-  /*  Configure SPI SCK pin, SPI MISO pin, SPI MOSI pin                                                     */
-  HT32F_DVB_GPxConfig(FLASH_SPI_SCK_GPIO_ID, FLASH_SPI_SCK_AFIO_PIN, FLASH_SPI_SCK_AFIO_MODE);
-  HT32F_DVB_GPxConfig(FLASH_SPI_MISO_GPIO_ID, FLASH_SPI_MISO_AFIO_PIN, FLASH_SPI_MISO_AFIO_MODE);
-  HT32F_DVB_GPxConfig(FLASH_SPI_MOSI_GPIO_ID, FLASH_SPI_MOSI_AFIO_PIN, FLASH_SPI_MOSI_AFIO_MODE);
 
-  /*  SPI Configuration                                                                                     */
-  SPI_InitStructure.SPI_Mode = SPI_MASTER;
-  SPI_InitStructure.SPI_FIFO = SPI_FIFO_DISABLE;
-  SPI_InitStructure.SPI_DataLength = SPI_DATALENGTH_8;
-  SPI_InitStructure.SPI_SELMode = SPI_SEL_SOFTWARE;
-  SPI_InitStructure.SPI_SELPolarity = SPI_SELPOLARITY_LOW;
-  SPI_InitStructure.SPI_FirstBit = SPI_FIRSTBIT_MSB;
-  SPI_InitStructure.SPI_CPOL = SPI_CPOL_HIGH;
-  SPI_InitStructure.SPI_CPHA = SPI_CPHA_SECOND;
-  SPI_InitStructure.SPI_RxFIFOTriggerLevel = 0;
-  SPI_InitStructure.SPI_TxFIFOTriggerLevel = 0;
-  SPI_InitStructure.SPI_ClockPrescaler = 2;
-  SPI_Init(FLASH_SPI, &SPI_InitStructure);
+  	GPIO_SetOutBits( HT_GPIOE, GPIO_PIN_8 );
+  	GPIO_DirectionConfig( HT_GPIOE, GPIO_PIN_8, GPIO_DIR_OUT );
+	GPIO_SetOutBits( HT_GPIOE, GPIO_PIN_8 );
 
-  SPI_SELOutputCmd(FLASH_SPI, ENABLE);
+	printf( "\r\nSPI_FLASH_Init" );
 
-  SPI_Cmd(FLASH_SPI, ENABLE);
 
-  return TRUE;
+	/*  Configure SPI SCK pin, SPI MISO pin, SPI MOSI pin                                                     */
+	HT32F_DVB_GPxConfig(FLASH_SPI_SCK_GPIO_ID, FLASH_SPI_SCK_AFIO_PIN, FLASH_SPI_SCK_AFIO_MODE);
+	HT32F_DVB_GPxConfig(FLASH_SPI_MISO_GPIO_ID, FLASH_SPI_MISO_AFIO_PIN, FLASH_SPI_MISO_AFIO_MODE);
+	HT32F_DVB_GPxConfig(FLASH_SPI_MOSI_GPIO_ID, FLASH_SPI_MOSI_AFIO_PIN, FLASH_SPI_MOSI_AFIO_MODE);
+
+	/*  SPI Configuration                                                                                     */
+	SPI_InitStructure.SPI_Mode = SPI_MASTER;
+	SPI_InitStructure.SPI_FIFO = SPI_FIFO_DISABLE;
+	SPI_InitStructure.SPI_DataLength = SPI_DATALENGTH_8;
+	SPI_InitStructure.SPI_SELMode = SPI_SEL_SOFTWARE;
+	SPI_InitStructure.SPI_SELPolarity = SPI_SELPOLARITY_LOW;
+	SPI_InitStructure.SPI_FirstBit = SPI_FIRSTBIT_MSB;
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_HIGH;
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_SECOND;
+	SPI_InitStructure.SPI_RxFIFOTriggerLevel = 0;
+	SPI_InitStructure.SPI_TxFIFOTriggerLevel = 0;
+	SPI_InitStructure.SPI_ClockPrescaler = 2;
+
+	SPI_Init(FLASH_SPI, &SPI_InitStructure);
+
+	SPI_SELOutputCmd(FLASH_SPI, ENABLE);
+
+	SPI_Cmd(FLASH_SPI, ENABLE);
+
+	return TRUE;
 }
 
 /*********************************************************************************************************//**

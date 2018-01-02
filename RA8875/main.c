@@ -10,6 +10,9 @@
 #include "TimerManager.h"
 #include "common/MX25L512.h"
 
+#define _FW 0x18010200
+
+
 #if 0
 u8 rabit[1500] =
 {
@@ -517,6 +520,7 @@ int main( void )
 
 	RETARGET_Configuration( );						//Retarget Related configuration
 	printf( "\r\n========== Initial ==========" );
+	printf( "\r\nFW %x", _FW );
 
 	HT32F_DVB_LEDInit( HT_LED1 );
 

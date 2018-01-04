@@ -57,11 +57,11 @@ void I2C_EEPROM_Init(void)
   CKCU_PeripClockConfig_TypeDef CKCUClock = {{0}};
   EEPROM_I2C_CLK(CKCUClock) = 1;
   CKCUClock.Bit.AFIO        = 1;
-  CKCU_PeripClockConfig(CKCUClock, ENABLE);
+  CKCU_PeripClockConfig( CKCUClock, ENABLE );
 
   /* Configure I2C SCL pin, I2C SDA pin                                                                     */
-  HT32F_DVB_GPxConfig(EEPROM_I2C_SCL_GPIO_ID, EEPROM_I2C_SCL_AFIO_PIN, EEPROM_I2C_SCL_AFIO_MODE);
-  HT32F_DVB_GPxConfig(EEPROM_I2C_SDA_GPIO_ID, EEPROM_I2C_SDA_AFIO_PIN, EEPROM_I2C_SDA_AFIO_MODE);
+  HT32F_DVB_GPxConfig( EEPROM_I2C_SCL_GPIO_ID, EEPROM_I2C_SCL_AFIO_PIN, EEPROM_I2C_SCL_AFIO_MODE);
+  HT32F_DVB_GPxConfig( EEPROM_I2C_SDA_GPIO_ID, EEPROM_I2C_SDA_AFIO_PIN, EEPROM_I2C_SDA_AFIO_MODE);
 
   /* I2C configuration                                                                                      */
   I2C_InitStructure.I2C_GeneralCall = I2C_GENERALCALL_DISABLE;
@@ -165,7 +165,7 @@ void I2C_EEPROM_BufferRead(u8* pBuffer, u8 ReadAddr, u16 NumByteToRead)
   {
     while (!I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_RX_NOT_EMPTY));
     *pBuffer = I2C_ReceiveData(EEPROM_I2C);
-	  
+
 
     pBuffer++;
     NumByteToRead--;
@@ -181,28 +181,87 @@ void I2C_EEPROM_BufferRead(u8* pBuffer, u8 ReadAddr, u16 NumByteToRead)
 
 void I2C_BufferRead(u8* pBuffer,u8 DevAddr, u8 ReadAddr, u16 NumByteToRead)
 {
-  Assert_Param(NumByteToRead > 0);
-  AckPolling(DevAddr);
-  while (!I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_TX_EMPTY));
-  I2C_SendData(EEPROM_I2C, ReadAddr);
-  I2C_TargetAddressConfig(EEPROM_I2C, DevAddr, I2C_MASTER_READ);
-  while (!I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_SEND_START));
-  while (!I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_RECEIVER_MODE));
-  if (NumByteToRead > 1){
-    I2C_AckCmd(EEPROM_I2C, ENABLE);
-  }
-  while (NumByteToRead){
-    while (!I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_RX_NOT_EMPTY));
-    *pBuffer = I2C_ReceiveData(EEPROM_I2C);
-    pBuffer++;
-    NumByteToRead--;
+	Assert_Param(NumByteToRead > 0);
 
-    if (NumByteToRead == 1){
-      I2C_AckCmd(EEPROM_I2C, DISABLE);
-    }
-  }
-  I2C_GenerateSTOP(EEPROM_I2C);
+	// Send DevAddr
+	AckPolling( EEPROM_I2C, DevAddr );
+
+	while( !I2C_CheckStatus( EEPROM_I2C, I2C_MASTER_TX_EMPTY ) );
+
+	// Sned ReadAddr
+	I2C_SendData( EEPROM_I2C, ReadAddr );
+
+	// Send DevAddr
+	I2C_TargetAddressConfig( EEPROM_I2C, DevAddr, I2C_MASTER_READ );
+
+	while( !I2C_CheckStatus( EEPROM_I2C, I2C_MASTER_SEND_START ) );
+
+	while( !I2C_CheckStatus( EEPROM_I2C, I2C_MASTER_RECEIVER_MODE ) );
+
+	if( NumByteToRead > 1 )
+	{
+		I2C_AckCmd( EEPROM_I2C, ENABLE );
+	}
+
+	while (NumByteToRead)
+	{
+		while( !I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_RX_NOT_EMPTY));
+
+		*pBuffer = I2C_ReceiveData( EEPROM_I2C );
+		pBuffer++;
+		NumByteToRead--;
+
+		if (NumByteToRead == 1)
+		{
+	  		I2C_AckCmd( EEPROM_I2C, DISABLE );
+		}
+	}
+
+	I2C_GenerateSTOP( EEPROM_I2C );
 }
+
+void I2C_BufferWrite( HT_I2C_TypeDef* I2Cx, u8* pBuffer, u8 DevAddr, u8 ReadAddr, u16 NumByteToWrite )
+{
+	// TODO 需確認Salve ACK Wait 方法
+
+	u16 i = 0xFFFF;
+
+	Assert_Param( NumByteToWrite > 0 );
+
+	// Send DevAddr
+	AckPolling( I2Cx, DevAddr );
+
+	while ( !I2C_CheckStatus( I2Cx, I2C_MASTER_TX_EMPTY ) );
+
+	// I2C_ClearFlag( EEPROM_I2C, I2C_FLAG_RXNACK );
+
+	// Sned ReadAddr
+	I2C_SendData( EEPROM_I2C, ReadAddr );
+
+	while( !I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_TX_EMPTY ) );
+
+	// while( I2C_GetFlagStatus( EEPROM_I2C, I2C_FLAG_RXNACK ) );
+
+	while ( NumByteToWrite )
+	{
+		// I2C_ClearFlag( EEPROM_I2C, I2C_FLAG_RXNACK );
+
+		I2C_SendData( EEPROM_I2C, *pBuffer );
+
+		while( !I2C_CheckStatus(EEPROM_I2C, I2C_MASTER_TX_EMPTY ) );
+
+		// while( I2C_GetFlagStatus( EEPROM_I2C, I2C_FLAG_RXNACK ) );
+
+		// printf( "\r\nwhile( I2C_GetFlagStatus( EEPROM_I2C, I2C_FLAG_RXNACK ) );" );
+
+		pBuffer++;
+
+		NumByteToWrite--;
+	}
+
+	I2C_GenerateSTOP( EEPROM_I2C );
+}
+
 
 /**
   * @}
@@ -216,17 +275,17 @@ void I2C_BufferRead(u8* pBuffer,u8 DevAddr, u8 ReadAddr, u16 NumByteToRead)
   * @brief  EEPROM acknowledge polling.
   * @retval None
   ***********************************************************************************************************/
-void AckPolling(u8 Addr)
+void AckPolling( HT_I2C_TypeDef* I2Cx, u8 Addr )
 {
   u32 reg;
 
   /* wait if bus busy                                                                                       */
-  while (I2C_GetFlagStatus(EEPROM_I2C, I2C_FLAG_BUSBUSY));
+  while( I2C_GetFlagStatus( EEPROM_I2C, I2C_FLAG_BUSBUSY ) );
 
-  while (1)
+  while( 1 )
   {
     /* send slave address                                                                                   */
-    I2C_TargetAddressConfig(EEPROM_I2C, Addr, I2C_MASTER_WRITE);
+    I2C_TargetAddressConfig( EEPROM_I2C, Addr, I2C_MASTER_WRITE );
 
     /* check status                                                                                         */
     while (1)
@@ -240,7 +299,7 @@ void AckPolling(u8 Addr)
 
       if (reg & I2C_FLAG_RXNACK)
       {
-        I2C_ClearFlag(EEPROM_I2C, I2C_FLAG_RXNACK);
+        I2C_ClearFlag( EEPROM_I2C, I2C_FLAG_RXNACK );
         break;
       }
     }

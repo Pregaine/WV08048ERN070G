@@ -487,7 +487,7 @@ TouchCode_t TouchPanelA2DFiltered( int * x, int * y )
 
 	TouchCode_t ret = touchState;
 
-	printf( "\r\nTouchPanelA2DFiltered" );
+	// printf( "\r\nTouchPanelA2DFiltered" );
 
 	// Test for TP Interrupt pending in register INTC2
 	if ( ( DataRead( INTC2 ) & RA8875_INT_TP ) )
@@ -640,8 +640,6 @@ RetCode_t TouchPanelCalibrate( const char *msg, tpMatrix_t *matrix, int maxwait_
 	#if 1
 	while ( TouchPanelA2DFiltered( &x, &y ) && ( timeout_read( ) < maxwait_s ) )
 	{
-
-
 		wait_ms( 20 );
 	}
 	#endif

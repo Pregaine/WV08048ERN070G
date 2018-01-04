@@ -9,6 +9,7 @@
 #include "DisplayDefs.h"
 #include "TimerManager.h"
 #include "common/MX25L512.h"
+#include "RTC.h"
 
 #define _FW 0x18010200
 
@@ -376,8 +377,11 @@ int main( void )
 	// u16 temp;
 	// u16 temp_result;
 	u8	lsd,msd;
+	rtc_t rtc;
 	// int second;
 	rect_t r;
+	char buffer [50];
+  	int n, a=5, b=3;
 
 	RETARGET_Configuration( );						//Retarget Related configuration
 	printf( "\r\n========== Initial ==========" );
@@ -427,7 +431,8 @@ int main( void )
 	kp = Keypad_CreateObj( Black, Gray );
 	lcd = RA8875_CreateObj( );
 
-	// I2C_EEPROM_Init( );
+	I2C_EEPROM_Init( );
+	RTC_Init();
 
 	/* Initialize the SPI_FLASH driver */
   	result = SPI_FLASH_Init();
@@ -444,7 +449,7 @@ int main( void )
     // lcd->background( Black );
 	// ---------------------------------------
 
-	CalibrateTS();
+	// CalibrateTS();
 	// CalculatorKeypadTest( );
 
 	/*
@@ -462,7 +467,7 @@ int main( void )
 	CmdWrite( 0x02 );
 	openBMP3( "bg.dat" );
 
-	FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
 
 	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
 
@@ -534,23 +539,21 @@ int main( void )
 	// }
 
 	/*
-
 	CmdWrite(0x02);
 	Chk_Busy();
-
 	*/
 
 	// Write_Dir(0x8E,0x80);	// Clean
 	// CmdWrite(0x02);			// MRWC
-
-	printf( "\r\n=====Start=====" );
-
 	// KeyBoard_Int( );
+
+	RTC_SetDateTime( &rtc );
+
 
 	while ( 1 )
 	{
 		Graphic_Mode( );
-		lcd->clsw( FULLWINDOW );
+		// lcd->clsw( FULLWINDOW );
 		r.p1.x = 0;
 		r.p1.y = 0;
 		r.p2.x = 100;
@@ -559,71 +562,23 @@ int main( void )
 
 		wait_ms( 1000 );
 
-		EBI_SRAM_Test_1( );
-
-		wait_ms( 1000 );
-
         Graphic_Mode( );
         Write_Dir( 0x8E, 0x80 ); 	//Clean
         CmdWrite( 0x02 );
         openBMP3( "bg.dat" );
 
+        Text_Mode( );
+		lcd->SetTextFontSize( 1, 1 );
+		lcd->SetTextCursor( 400, 200 );
+  		sprintf( buffer, "%d %d %d", rtc.hour, rtc.min, rtc.sec );
+
+        lcd->puts( buffer );
+
         wait_ms( 1000 );
 
-        EBI_SRAM_Test( );
+		RTC_GetDateTime( &rtc );
 
-		// I2C_EEPROM_BufferWrite(mBuff2,0,32);
-		HT32F_DVB_LEDToggle( HT_LED1 );
-
-		// I2C_BufferRead( mBuff2,0x68,0,8 );			//0x50
-
-		// I2C_EEPROM_BufferRead(mBuff2,0, 8);
-		// for(i=0;i<8;i++){
-		//		printf("[0x%x],",mBuff2[i]);
-		//}
-		lsd 				= ( mBuff2[2] &0x0f );
-		msd 				= ( mBuff2[2] &0x70 ) >> 4;
-
-        #if 0
-		tStr2[1]			= lsd + '0';
-		tStr2[0]			= msd + '0';
-
-		tStr2[2]			= ':';
-		lsd 				= ( mBuff2[1] &0x0f );
-		msd 				= ( mBuff2[1] &0x70 ) >> 4;
-		tStr2[4]			= lsd + '0';
-		tStr2[3]			= msd + '0';
-		lsd 				= ( mBuff2[0] &0x0f );
-		msd 				= ( mBuff2[0] &0x70 ) >> 4;
-		tStr2[5]			= ':';
-		tStr2[7]			= lsd + '0';
-		tStr2[6]			= msd + '0';
-		tStr2[8]			= '\0';
-        #endif
-
-		// printf("\r\n%s\r\n",tStr2);
-
-		/*
-		for(i=0;i<8;i++){
-			if( i%8==7)
-				printf("[0x%x]\r\n",mBuff2[i]);
-			else
-				printf("[0x%x],",mBuff2[i]);
-		}
-		*/
-
-		// tStr2[0] = 0x31;
-		// tStr2[1] = 0x32;
-		// tStr2[2] = 0x33;
-		// Chk_Busy();
-
-		// DrawString( 300,200,tStr2,3,3,FALSE,FALSE,White,Red );
-
-		// DrawString(10,300,mBuff2[i],0,0,FALSE,FALSE,Green,Purple);
-		// DrawString(10,20,tStr2,0,0,FALSE,FALSE,Green,Red);
-		printf( "\r\n=====End=====" );
-
-		wait_ms( 1000 );
+		printf( "\r\nTime %d/%d/%d %d %d:%d:%d", rtc.year, rtc.month, rtc.date, rtc.weekDay, rtc.hour, rtc.min, rtc.sec );
 	}
 }
 

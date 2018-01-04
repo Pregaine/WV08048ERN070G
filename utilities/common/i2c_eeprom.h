@@ -72,8 +72,9 @@ void I2C_EEPROM_PageWrite(u8* pBuffer, u8 WriteAddr, u16 NumByteToWrite);
 void I2C_EEPROM_BufferWrite(u8* pBuffer, u8 WriteAddr, u16 NumByteToWrite);
 void I2C_EEPROM_BufferRead(u8* pBuffer, u8 ReadAddr, u16 NumByteToRead);
 void I2C_BufferRead(u8* pBuffer,u8 DevAddr, u8 ReadAddr, u16 NumByteToRead);
-void AckPolling(u8 Addr);
-/**
+void I2C_BufferWrite( HT_I2C_TypeDef* I2Cx, u8* pBuffer,u8 DevAddr, u8 ReadAddr, u16 NumByteToRead );
+void AckPolling( HT_I2C_TypeDef* I2Cx, u8 Addr);
+/** 
   * @}
   */
 

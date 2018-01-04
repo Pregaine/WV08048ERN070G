@@ -308,6 +308,7 @@ void I2C_AddressMaskConfig(HT_I2C_TypeDef* I2Cx, u32 I2C_Mask);
 u16 I2C_GetAddressBuffer(HT_I2C_TypeDef* I2Cx);
 void I2C_CombFilterCmd(HT_I2C_TypeDef* I2Cx, ControlStatus NewState);
 void I2C_SequentialFilterConfig(HT_I2C_TypeDef* I2Cx, u32 Seq_Filter_Select);
+
 /**
   * @}
   */

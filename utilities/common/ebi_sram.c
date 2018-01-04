@@ -283,7 +283,7 @@ void EBI_SRAM_Test( void )
 	}
 	else
 	{
-		printf( "\r\nSRAM Test Pass !" );
+		printf( "\r\nSRAM Test Pass" );
 	}
 
 }

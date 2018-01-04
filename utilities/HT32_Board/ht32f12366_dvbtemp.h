@@ -407,8 +407,10 @@ typedef enum
 /** @addtogroup HT32F12366_DVBTEMP_I2C_EEPROM
   * @{
   */
-#define EEPROM_I2C_CLK(CK)          (CK.Bit.I2C1)
-#define EEPROM_I2C                          (HT_I2C1)
+
+#if 0
+#define EEPROM_I2C_CLK(CK)          ( CK.Bit.I2C1 )
+#define EEPROM_I2C                  ( HT_I2C1 )
 
 #define EEPROM_I2C_SCL_GPIO_ID      (GPIO_PA)
 #define EEPROM_I2C_SCL_AFIO_PIN     (AFIO_PIN_0)
@@ -417,6 +419,20 @@ typedef enum
 #define EEPROM_I2C_SDA_GPIO_ID      (GPIO_PA)
 #define EEPROM_I2C_SDA_AFIO_PIN     (AFIO_PIN_1)
 #define EEPROM_I2C_SDA_AFIO_MODE    (AFIO_FUN_I2C)
+#endif
+
+#define EEPROM_I2C_CLK(CK)          ( CK.Bit.I2C0 )
+#define EEPROM_I2C                  ( HT_I2C0 )
+
+#define EEPROM_I2C_SCL_GPIO_ID      ( GPIO_PB )
+#define EEPROM_I2C_SCL_AFIO_PIN     ( AFIO_PIN_12 )
+#define EEPROM_I2C_SCL_AFIO_MODE    ( AFIO_FUN_I2C )
+
+#define EEPROM_I2C_SDA_GPIO_ID      ( GPIO_PB )
+#define EEPROM_I2C_SDA_AFIO_PIN     ( AFIO_PIN_13 )
+#define EEPROM_I2C_SDA_AFIO_MODE    ( AFIO_FUN_I2C )
+
+
 /**
   * @}
   */

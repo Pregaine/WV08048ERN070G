@@ -490,7 +490,7 @@ void SetColor2( u8 color )
 void Graphic_Mode( void )
 {
 	u8 temp;
-	Chk_Busy();
+	Chk_Busy( );
 	temp				= DataRead( 0x40 );
 	temp				&= 0x7f;
 	DataWrite( temp );

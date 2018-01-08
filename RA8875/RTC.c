@@ -242,10 +242,10 @@ void RTC_SetDateTime( rtc_t *rtc )
  	unsigned char data[ 7 ] = { 0 };
 
  	rtc->sec = 20;
- 	rtc->min = 11;
- 	rtc->hour = 5;
-	rtc->weekDay = 4;
-	rtc->date  = 4;
+ 	rtc->min = 32;
+ 	rtc->hour = 13;
+	rtc->weekDay = 5;
+	rtc->date  = 5;
 	rtc->month = 1;
  	rtc->year  = 18;
 

@@ -802,6 +802,8 @@ void ra_puts( const char * string )
         	// @TODO calling individual _putc is slower... optimizations?
             _putc( *string++ );
 
+            wait_ms( 1 );
+
             // printf( "\r\n*string %s", "A" );
 
             // printf( "\r\n*string %s", *string );

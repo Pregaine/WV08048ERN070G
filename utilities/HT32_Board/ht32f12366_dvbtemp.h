@@ -243,7 +243,6 @@ typedef enum
 #define FLASH_SPI_SEL_AFIO_MODE     ( AFIO_MODE_DEFAULT )
 #define FLASH_SPI_SEL_CLK(CK)       ( CK.Bit.PE )
 
-
 /**
   * @}
   */
@@ -317,12 +316,12 @@ typedef enum
 #define GPIO_DIP      (GPIO_PA)//(GPIO_PD)
 #define GPIO_RST      (GPIO_PC)//(GPIO_PB)
 
-#define DC            (AFIO_PIN_6)	// (AFIO_PIN_11)
+#define DC            (AFIO_PIN_6)		// (AFIO_PIN_11)
 #define WR            (AFIO_PIN_8)
-#define RD            (AFIO_PIN_6)	// (AFIO_PIN_6)
-#define CS            (AFIO_PIN_7)	// (AFIO_PIN_14)
-#define DIP           (AFIO_PIN_0)	// (AFIO_PIN_13)
-#define RST           (AFIO_PIN_12)	// (AFIO_PIN_7)
+#define RD            (AFIO_PIN_6)		// (AFIO_PIN_6)
+#define CS            (AFIO_PIN_7)		// (AFIO_PIN_14)
+#define DIP           (AFIO_PIN_0)		// (AFIO_PIN_13)
+#define RST           (AFIO_PIN_12)		// (AFIO_PIN_7)
 
 
 //#define HTCFG_INT      (HT_GPIOB)

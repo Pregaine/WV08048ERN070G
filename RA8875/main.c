@@ -9,9 +9,10 @@
 #include "DisplayDefs.h"
 #include "TimerManager.h"
 #include "common/MX25L512.h"
+#include "tsc2013.h"
 #include "RTC.h"
 
-#define _FW 0x18010200
+#define _FW 0x18010500
 
 u8				tick = 0;
 bool			click = FALSE;
@@ -31,7 +32,7 @@ void BTE_Ex3( void );
 void BTE_Ex1( void );
 void BTE_SMILE( void );
 
-
+#if 0
 const unsigned char bw[2048] =
 {
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,
@@ -240,9 +241,9 @@ const unsigned char bw[2048] =
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x0f,
 	0xff,0xe0,0x00,0x00,0x00,0x00,0x00,0x00,
 };
+#endif
 
-
-u8 mBuff2[256] = "test";
+// u8 mBuff2[256] = "test";
 
 // Define a keyboard layout as a calculator-like keypad
 // 789 /(
@@ -276,7 +277,7 @@ _KEYPAD *kp;
 _RA8875 *lcd;
 
 
-void CalibrateTS(void)
+void CalibrateTS( void )
 {
     // FIL *fh;
     tpMatrix_t matrix;
@@ -411,8 +412,6 @@ int main( void )
 
 		GPIO_WriteOutBits( HT_GPIOC, AFIO_PIN_12,SET );
 
-		// HT32F_DVB_LEDToggle( HT_LED1 );
-
 		wait_ms( 1000 );
 
 		GPIO_WriteOutBits( HT_GPIOC, AFIO_PIN_12,0 );
@@ -423,16 +422,15 @@ int main( void )
 
     LCD_Init( );
     LCD_Config( );
+	kp = Keypad_CreateObj( Black, Gray );
+	lcd = RA8875_CreateObj( );
 
     EBI_SRAM_Init( );
     EBI_SRAM_Test( );
    	EBI_SRAM_Test_1( );
 
-	kp = Keypad_CreateObj( Black, Gray );
-	lcd = RA8875_CreateObj( );
-
 	I2C_EEPROM_Init( );
-	RTC_Init();
+	RTC_Init( );
 
 	/* Initialize the SPI_FLASH driver */
   	result = SPI_FLASH_Init();
@@ -441,33 +439,91 @@ int main( void )
 
   	MX25L512_Test( );
 
-	f_mount( 0, &fs );
-
+    f_mount( 0, &fs );
 	// DrawPictureFromSD( "file1.dat", SD_ReadBuf, 100, 0 );
 
     // lcd->foreground( Yellow );
     // lcd->background( Black );
 	// ---------------------------------------
-
-	// CalibrateTS();
 	// CalculatorKeypadTest( );
 
-	/*
 	Graphic_Mode( );
 	lcd->clsw( FULLWINDOW );
 	r.p1.x = 0;
 	r.p1.y = 0;
-	r.p2.x = 800;
-	r.p2.y = 480;
+	r.p2.x = 799;
+	r.p2.y = 479;
 	lcd->fillrect( r, Gray, FILL );
-	*/
 
+	#if 1
+    printf( "\r\nGraphic_Mode( );" );
 	Graphic_Mode( );
 	Write_Dir( 0x8E, 0x80 ); 	//Clean
 	CmdWrite( 0x02 );
 	openBMP3( "bg.dat" );
+    printf( "\r\nopenBMP3( bg.dat );" );
+	#endif
 
-	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+	// RTC_GetDateTime( &rtc );
+
+	printf( "\r\nTime %d/%d/%d %d %d:%d:%d", rtc.year, rtc.month, rtc.date, rtc.weekDay, rtc.hour, rtc.min, rtc.sec );
+
+	tsc2013_init( );
+
+    // RTC_SetDateTime( &rtc );
+
+	wait_ms( 500 );
+
+	CalibrateTS( );
+
+	FloatingSmallQWERTYTest( 30, 50, 725, 0 );
+
+	#if 0
+
+	for( ;; )
+	{
+		if( g_touch_detected == 1 )
+		{
+			g_touch_detected = 0;
+
+			printf( "\r\ng_touch_detected occ " );
+
+            tsc2013_read_touch_status( );
+
+            if ( ( tsc2013_touch_status & 0xf000 ) == 0xf000 )
+			{
+                tsc2013_read_touch_data();
+
+                printf( "\r\ndata_set.values.X1 %d ", data_set.values.X1 );
+
+                printf( "\r\ndata_set.values.Y1 %d ", data_set.values.Y1 );
+			}
+
+			// printf( "\r\ndata_set.values.X1 %d ", data_set.values.X1 );
+
+			// printf( "\r\ndata_set.values.Y1 %d ", data_set.values.Y1 );
+		}
+		else
+		{
+			// RTC_GetDateTime( &rtc );
+
+			// printf( "\r\nTime %d/%d/%d %d %d:%d:%d", rtc.year, rtc.month, rtc.date, rtc.weekDay, rtc.hour, rtc.min, rtc.sec );
+
+			// tsc2013_read_touch_data( );
+
+			// printf( "\r\ndata_set.values.X1 %d ", data_set.values.X1 );
+
+			// printf( "\r\ndata_set.values.Y1 %d ", data_set.values.Y1 );
+
+		}
+
+        RTC_GetDateTime( &rtc );
+
+		printf( "\r\nTime %d/%d/%d %d %d:%d:%d", rtc.year, rtc.month, rtc.date, rtc.weekDay, rtc.hour, rtc.min, rtc.sec );
+
+		wait_ms( 500 );
+	}
+	#endif
 
 	// FloatingSmallQWERTYTest( 30, 50, 725, 0 );
 
@@ -547,12 +603,11 @@ int main( void )
 	// CmdWrite(0x02);			// MRWC
 	// KeyBoard_Int( );
 
-	RTC_SetDateTime( &rtc );
-
+	// RTC_SetDateTime( &rtc );
 
 	while ( 1 )
 	{
-		Graphic_Mode( );
+		// Graphic_Mode( );
 		// lcd->clsw( FULLWINDOW );
 		r.p1.x = 0;
 		r.p1.y = 0;
@@ -567,16 +622,22 @@ int main( void )
         CmdWrite( 0x02 );
         openBMP3( "bg.dat" );
 
-        Text_Mode( );
-		lcd->SetTextFontSize( 1, 1 );
-		lcd->SetTextCursor( 400, 200 );
-  		sprintf( buffer, "%d %d %d", rtc.hour, rtc.min, rtc.sec );
-
-        lcd->puts( buffer );
-
         wait_ms( 1000 );
 
-		RTC_GetDateTime( &rtc );
+		lcd->clsw( FULLWINDOW );
+		lcd->SetTextFontSize( 4, 4 );
+		lcd->SetTextCursor( 360, 100 );
+		lcd->puts( "Winstar" );
+
+		for( n = 0; n < 5; n++ )
+		{
+			RTC_GetDateTime( &rtc );
+	  		sprintf( buffer, "%d %d %d", rtc.hour, rtc.min, rtc.sec );
+			lcd->SetTextCursor( 360, 200 );
+			lcd->puts( buffer );
+
+	        wait_ms( 1000 );
+	   }
 
 		printf( "\r\nTime %d/%d/%d %d %d:%d:%d", rtc.year, rtc.month, rtc.date, rtc.weekDay, rtc.hour, rtc.min, rtc.sec );
 	}
@@ -585,10 +646,10 @@ int main( void )
 
 void openBMP3( const char * filename )
 {
-	UINT			t	= 0,j = 0;
-	UINT			dcnt = 0;
+	UINT t = 0, j = 0;
+	UINT dcnt = 0;
 
-	result	= f_open( &fsrc,( const char * ) filename,FA_OPEN_EXISTING | FA_READ );
+	result = f_open( &fsrc, ( const char * ) filename, FA_OPEN_EXISTING | FA_READ );
 
 	if ( result == FR_OK )
 	{
@@ -601,7 +662,7 @@ void openBMP3( const char * filename )
 
 	for ( t = 0; t < 15; t++ )
 	{
-		result				= f_read( &fsrc,SD_ReadBuf,51200,&dcnt );
+		result = f_read( &fsrc,SD_ReadBuf,51200,&dcnt );
 
 		for ( j = 0; j < 25600; j++ )
 		{

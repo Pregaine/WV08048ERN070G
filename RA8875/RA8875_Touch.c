@@ -4,6 +4,8 @@
 #include "RA8875.h"
 #include "RA8875_Touch.h"
 #include "TimerManager.h"
+#include "tsc2013.h"
+
 
 #define NOTOUCH_TIMEOUT_uS 100	// 100000
 #define TOUCH_TICKER_uS      	  1000
@@ -104,7 +106,9 @@ RetCode_t TouchPanelInit( void )
     */
 
 	//TPCR0: Set enable bit, default sample time, wakeup, and ADC clock
-	WriteCommand( TPCR0, TP_ENABLE | TP_ADC_SAMPLE_DEFAULT_CLKS | TP_ADC_CLKDIV_DEFAULT );
+	// WriteCommand( TPCR0, TP_ENABLE | TP_ADC_SAMPLE_DEFAULT_CLKS | TP_ADC_CLKDIV_DEFAULT );
+
+	WriteCommand( TPCR0, TP_DISABLE | TP_ADC_SAMPLE_DEFAULT_CLKS | TP_ADC_CLKDIV_DEFAULT );
 
 	// TPCR1: Set auto/manual, Ref voltage, debounce, manual mode params
 	WriteCommand( TPCR1, TP_MODE_DEFAULT | TP_DEBOUNCE_DEFAULT );
@@ -489,16 +493,35 @@ TouchCode_t TouchPanelA2DFiltered( int * x, int * y )
 
 	// printf( "\r\nTouchPanelA2DFiltered" );
 
+	tsc2013_read_touch_status( );
+
 	// Test for TP Interrupt pending in register INTC2
-	if ( ( DataRead( INTC2 ) & RA8875_INT_TP ) )
+	// if ( ( DataRead( INTC2 ) & RA8875_INT_TP ) )
+	if( g_touch_detected == 1 && ( ( tsc2013_touch_status & 0xf000 ) == 0xf000 ) )
 	{
 		// touchTimer.reset();
 		// touchTimer
+		g_touch_detected = 0;
+
 		touchTimer_reset( );
+
+		/*
 
 		// Get the next data samples
 		ybuf[touchSample] = DataRead( TPYH ) << 2 | ( ( DataRead( TPXYL ) & 0xC ) >> 2 ); 	// D[9:2] from reg TPYH, D[1:0] from reg TPXYL[3:2]
 		xbuf[touchSample] = DataRead( TPXH ) << 2 | ( ( DataRead( TPXYL ) & 0x3 ) ); 		// D[9:2] from reg TPXH, D[1:0] from reg TPXYL[1:0]
+
+		*/
+		tsc2013_read_touch_data( );
+
+		ybuf[touchSample] = data_set.values.Y1;
+		xbuf[touchSample] = data_set.values.X1;
+
+		#if 0
+		printf( "\r\ndata_set.values.X1 %d ", data_set.values.X1 );
+
+		printf( "\r\ndata_set.values.Y1 %d ", data_set.values.Y1 );
+		#endif
 
 		// Check for a complete set
 		if ( ++touchSample == TPBUFSIZE )

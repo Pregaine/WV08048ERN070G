@@ -29,6 +29,7 @@
 #include "ht32_board.h"
 #include "sdio_sd.h"
 #include "TimerManager.h"
+#include "tsc2013.h"
 
 /** @addtogroup HT32_Series_Peripheral_Examples HT32 Peripheral Examples
   * @{
@@ -173,7 +174,25 @@ void SysTick_Handler(void)
 
   	_TouchTicker( );
 }
-u8 mBuff[256];
+
+
+
+/*********************************************************************************************************//**
+ * @brief   This function handles EXTI1 interrupt.
+ * @retval  None
+ ************************************************************************************************************/
+void EXTI0_IRQHandler(void)
+{
+	// Deactivate the corresponding EXTI interrupt
+	// EXTI_SWIntCmd( EXTI_CHANNEL_1, DISABLE );
+
+	EXTI_ClearEdgeFlag( EXTI_CHANNEL_0 );
+
+  	g_touch_detected = 1;
+
+}
+
+
 void EXTI13_IRQHandler(void)
 {
 	// u8 i=0;
@@ -209,19 +228,24 @@ void EXTI1_IRQHandler(void)
 
 void EXTI9_IRQHandler(void)
 {
-	u8 mBuff2[32];
-	int i=0;
-	EXTI_ClearEdgeFlag(EXTI_CHANNEL_9);
-	//printf("9\r\n");
-	///*
-	I2C_EEPROM_BufferRead(mBuff2,0, 32);
+	u8 mBuff2[ 32 ];
+
+	int i = 0;
+
+	EXTI_ClearEdgeFlag( EXTI_CHANNEL_9 );
+
+	I2C_EEPROM_BufferRead( mBuff2, 0, 32 );
+
 	printf("========= Start =========\r\n");
-	for(i=0;i<32;i++){
-		if( i%8==7)
-			printf("[0x%x]\r\n",mBuff2[i]);
+
+	for( i = 0; i < 32; i++ )
+	{
+		if( i % 8==7 )
+			printf("\r\n[0x%x]", mBuff2[i] );
 		else
-			printf("[0x%x],",mBuff2[i]);
+			printf("[0x%x],", mBuff2[i] );
 	}
-	printf("========= End =========\r\n");
-	//*/
+
+	printf( "\r\n========= End =========" );
+
 }

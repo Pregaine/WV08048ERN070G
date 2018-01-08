@@ -427,6 +427,11 @@
               <FileType>1</FileType>
               <FilePath>..\RTC.c</FilePath>
             </File>
+            <File>
+              <FileName>tsc2013.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tsc2013.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

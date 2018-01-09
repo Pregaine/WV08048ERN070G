@@ -14,11 +14,14 @@
 
 #define _FW 0x18010500
 
+/* Private variables ---------------------------------------------------------------------------------------*/
+CKCU_ClocksTypeDef ClockFreq;
+CKCU_CKOUTInitTypeDef CKOUTInit;
+CKCU_PLLInitTypeDef PLLInit;
+
 u8				tick = 0;
 bool			click = FALSE;
 u32 			uSpeedCount;
-
-/* Global variables ----------------------------------------------------------------------------------------*/
 FATFS			fs; /* File system object																	*/
 FIL 			fsrc; /* File object																		*/
 DIR 			dir; /* Directory object																	*/
@@ -369,17 +372,99 @@ void CalculatorKeypadTest(void)
     }
 }
 
+/*********************************************************************************************************//**
+  * @brief Configure system clock as 96 MHz and set HCLK prescaler.
+  * @retval None
+  ***********************************************************************************************************/
+void SysClockConfig_96MHz( void )
+{
+	ErrStatus ClockStatus;
+
+	/* Reset CKCU, SYSCLK = HSI */
+	CKCU_DeInit( );
+
+	/* Enable HSE */
+	CKCU_HSECmd( ENABLE );
+
+	/* Wait until HSE is ready or time-out */
+	ClockStatus = CKCU_WaitHSEReady();
+
+	if( ClockStatus == SUCCESS )
+	{
+		/* PLL configuration, PLLCLK = 96 MHz */
+		PLLInit.ClockSource = CKCU_PLLSRC_HSE;
+		PLLInit.CFG = CKCU_PLL_8M_96M;
+		PLLInit.BYPASSCmd = DISABLE;
+		CKCU_PLLInit( &PLLInit );
+
+		CKCU_PLLCmd( ENABLE );
+
+		/* Wait until PLL is ready */
+		while( CKCU_GetClockReadyStatus(CKCU_FLAG_PLLRDY) == RESET );
+
+		/* FLASH wait state configuration */
+        /* FLASH two wait clock */
+		// FLASH_SetWaitState( FLASH_WAITSTATE_3 );
+
+		/* HCLK = SYSCLK/1 */
+		CKCU_SetHCLKPrescaler( CKCU_SYSCLK_DIV1 );
+
+		/* Configure PLL as system clock */
+		ClockStatus = CKCU_SysClockConfig( CKCU_SW_PLL );
+
+		if( ClockStatus != SUCCESS )
+		{
+			while( 1 );
+		}
+	}
+	else
+	{
+		/* HSE is failed. User can handle this situation here. */
+		while( 1 );
+	}
+}
+
+void SystemClock_Init( )
+{
+	CKCU_PeripClockConfig_TypeDef CKCUClock = { { 0 } };
+
+	// SysClockConfig_96MHz( );
+
+	/* Get the current clocks setting */
+	CKCU_GetClocksFrequency( &ClockFreq );
+
+	/* Configures NVIC to enable clock ready interrupt */
+	NVIC_EnableIRQ( CKRDY_IRQn );
+
+	/* Enable HSE clock monitor & interrupt, once HSE is failed the NMI exception will occur */
+	CKCU_CKMCmd( ENABLE );
+	CKCU_IntConfig( CKCU_INT_CKSIE, ENABLE );
+
+	#if 0
+	/* Output HSE on CKOUT pin */
+	// CKCUClock.Bit.AFIO = 1;
+	// CKCU_PeripClockConfig( CKCUClock, ENABLE );
+
+	AFIO_GPxConfig( GPIO_PA, AFIO_PIN_8, AFIO_MODE_15 );
+	CKOUTInit.CKOUTSRC = CKCU_CKOUTSRC_HCLK_DIV16;
+	CKCU_CKOUTConfig( &CKOUTInit );
+	#endif
+
+	printf( "\r\nClockFreq.SYSCK_Freq %d", ClockFreq.SYSCK_Freq );
+	printf( "\r\nClockFreq.HCLK_Freq %d", ClockFreq.HCLK_Freq );
+	printf( "\r\nClockFreq.PLL_Freq %d", ClockFreq.PLL_Freq );
+	printf( "\r\nClockFreq.ADC_Freq %d", ClockFreq.ADC_Freq );
+
+}
 
 int main( void )
 {
-	// int i = 0;
 	// u8	tStr[ ] = "";
 	// u8	tStr2[ 9 ] = "";
 	// u16 temp;
 	// u16 temp_result;
 	u8	lsd,msd;
 	rtc_t rtc;
-	// int second;
 	rect_t r;
 	char buffer [50];
   	int n, a=5, b=3;
@@ -394,9 +479,11 @@ int main( void )
 	NVIC_EnableIRQ( PDMACH6_IRQn ); 					  // SDIO_RX
 	NVIC_EnableIRQ( PDMACH7_IRQn ); 					  // SDIO_TX
 
+	// SystemClock_Init( );
+
 	/* SYSTICK configuration */
-  	SYSTICK_ClockSourceConfig( SYSTICK_SRC_STCLK );       // Default : CK_SYS/8
-  	SYSTICK_SetReloadValue( SystemCoreClock / 8 / 1000 ); // (CK_SYS/8/1000) = 1ms on chip
+  	SYSTICK_ClockSourceConfig( SYSTICK_SRC_STCLK );       // Default : CK_SYS / 8
+  	SYSTICK_SetReloadValue( SystemCoreClock/8/1000 ); // ( CK_SYS / 8 / 1000 ) = 1ms on chip
   	SYSTICK_IntConfig( ENABLE );                          // Enable SYSTICK Interrupt
   	SYSTICK_CounterCmd( SYSTICK_COUNTER_CLEAR );
 	SYSTICK_CounterCmd( SYSTICK_COUNTER_ENABLE );
@@ -418,6 +505,9 @@ int main( void )
 	}
     #endif
 
+	I2C_EEPROM_Init( );
+	RTC_Init( );
+
 	wait_ms( 500 );
 
     LCD_Init( );
@@ -428,9 +518,6 @@ int main( void )
     EBI_SRAM_Init( );
     EBI_SRAM_Test( );
    	EBI_SRAM_Test_1( );
-
-	I2C_EEPROM_Init( );
-	RTC_Init( );
 
 	/* Initialize the SPI_FLASH driver */
   	result = SPI_FLASH_Init();
@@ -464,13 +551,12 @@ int main( void )
     printf( "\r\nopenBMP3( bg.dat );" );
 	#endif
 
-	// RTC_GetDateTime( &rtc );
+	// RTC_SetDateTime( &rtc );
+	RTC_GetDateTime( &rtc );
 
 	printf( "\r\nTime %d/%d/%d %d %d:%d:%d", rtc.year, rtc.month, rtc.date, rtc.weekDay, rtc.hour, rtc.min, rtc.sec );
 
 	tsc2013_init( );
-
-    // RTC_SetDateTime( &rtc );
 
 	wait_ms( 500 );
 

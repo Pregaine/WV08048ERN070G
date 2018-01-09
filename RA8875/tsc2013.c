@@ -23,12 +23,15 @@ void tsc2013_init( void )
 	u8 i;
 
 	// tsc2013_i2c_init();
+	printf( "\r\ntsc2013_init( )" );
 
 	tsc2013_reset( );
 
 	// enable_interrupt();
 
 	tsc2013_write_config_values( );
+
+	printf( "\r\ntsc2013_write_config_values( )" );
 
 	//Control Byte ID : 1
 	//			C3:C0 : 0
@@ -42,8 +45,6 @@ void tsc2013_init( void )
 	//			SWRST : 0
 	//			  STS : 0
 	tsc2013_i2c_write_byte( 0x80 ); 	// Scan X,Y,Z
-
-	// for(;;);
 
 	tsc2013_interrupt_init( );
 }
@@ -180,8 +181,6 @@ void tsc2013_i2c_write_byte( u8 value )
 void tsc2013_i2c_write_register( u8 reg_address, u16 value )
 {
 	// TODO 需確認Salve ACK Wait 方法
-
-	u16 i = 0xFFFF;
 
 	// Send DevAddr
 	AckPolling( EEPROM_I2C, TSC2013_I2C_ADDRESS );
